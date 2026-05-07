@@ -6,6 +6,7 @@ import TickerStrip from '@/components/TickerStrip';
 import NewsFeed from '@/components/NewsFeed';
 import MarketSidebar from '@/components/MarketSidebar';
 import DailyBriefing from '@/components/DailyBriefing';
+import ChatBox from '@/components/ChatBox';
 import { NewsArticle, TickerItem } from '@/lib/types';
 
 interface MarketData {
@@ -150,6 +151,8 @@ export default function Home() {
           }}
         />
       )}
+
+      <ChatBox articles={articles} />
     </div>
   );
 }
