@@ -48,24 +48,25 @@ ${editionContext}
 AVAILABLE HEADLINES:
 ${headlineBlock}
 
-Write a structured WhatsApp message using EXACTLY this format. Use WhatsApp formatting: *bold* for section headers. Keep each section tight — 2-4 sentences max. Total message must stay under 700 words.
+Write a structured WhatsApp message using EXACTLY this format. Use WhatsApp formatting: *bold* for section headers. Be extremely concise — the TOTAL message body must stay under 1100 characters.
 
 🌍 *GLOBAL MARKETS*
-[Overall market mood, key index moves, risk-on/risk-off tone, major macro developments]
+[2 sentences max: market mood, key index moves]
 
 🏦 *BANKING & DEALS*
-[M&A, IPOs, bond issuances, credit events, regulatory changes affecting financial institutions. If nothing significant, say "Quiet session for deals."]
+[2 sentences max: M&A, IPOs, credit events. If quiet, write "Quiet session for deals."]
 
 📊 *MACRO & CENTRAL BANKS*
-[Fed, ECB, BOE, BOJ commentary or decisions, inflation data, GDP, anything moving rates]
+[2 sentences max: Fed/ECB/BOE/BOJ, inflation, GDP]
 
 ⚡ *SECTOR SPOTLIGHT*
-[The single most important sector story — tech, energy, financials, commodities, etc.]
+[1 sentence only: the single most important sector story]
 
 🎯 *BANKER'S WATCH*
-[2-3 specific things a finance professional should track and WHY — cite deal flow, rates, or market risk implications]
+• [Watch item 1 — one line]
+• [Watch item 2 — one line]
 
-Write in a direct, confident tone. No filler phrases. Reference specific sources where relevant (e.g. "per Reuters…"). Do not fabricate data not in the headlines.`;
+Write in a direct, confident tone. No filler. No preamble. Do not fabricate data not in the headlines.`;
 }
 
 export async function generateWhatsAppBriefing(edition: Edition): Promise<string> {
@@ -82,7 +83,7 @@ export async function generateWhatsAppBriefing(edition: Edition): Promise<string
 
   const completion = await groq.chat.completions.create({
     model: 'llama-3.3-70b-versatile',
-    max_tokens: 900,
+    max_tokens: 500,
     temperature: 0.4,
     messages: [{ role: 'user', content: prompt }],
   });
@@ -102,6 +103,8 @@ export async function generateWhatsAppBriefing(edition: Edition): Promise<string
   return `${header}\n${timestamp}\n\n${body}${footer}`;
 }
 
+const CHAR_LIMIT = 1400;
+
 export async function sendWhatsApp(message: string): Promise<void> {
   const accountSid = process.env.TWILIO_ACCOUNT_SID;
   const authToken = process.env.TWILIO_AUTH_TOKEN;
@@ -111,11 +114,18 @@ export async function sendWhatsApp(message: string): Promise<void> {
     throw new Error('Missing Twilio credentials: TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, MY_WHATSAPP_NUMBER');
   }
 
+  const safe =
+    message.length > CHAR_LIMIT
+      ? message.slice(0, CHAR_LIMIT - 3) + '...'
+      : message;
+
+  console.log(`[sendWhatsApp] message length: ${message.length} → sending: ${safe.length} chars`);
+
   const credentials = Buffer.from(`${accountSid}:${authToken}`).toString('base64');
   const from = 'whatsapp:+14155238886'; // Twilio WhatsApp sandbox number
   const to = toNumber.startsWith('whatsapp:') ? toNumber : `whatsapp:${toNumber}`;
 
-  const body = new URLSearchParams({ From: from, To: to, Body: message });
+  const body = new URLSearchParams({ From: from, To: to, Body: safe });
 
   const res = await fetch(
     `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`,
