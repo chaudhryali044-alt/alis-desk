@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import Anthropic from '@anthropic-ai/sdk';
-
-const client = new Anthropic();
+import Groq from 'groq-sdk';
 
 export async function POST(req: NextRequest) {
+  const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
   const { title, description, link, source } = await req.json();
 
   if (!title) {
@@ -20,13 +19,13 @@ Link: ${link}
 Respond with exactly 3 bullet points, each starting with "•". No headers, no preamble.`;
 
   try {
-    const message = await client.messages.create({
-      model: 'claude-haiku-4-5-20251001',
+    const completion = await groq.chat.completions.create({
+      model: 'llama-3.1-8b-instant',
       max_tokens: 300,
       messages: [{ role: 'user', content: prompt }],
     });
 
-    const text = message.content[0].type === 'text' ? message.content[0].text : '';
+    const text = completion.choices[0]?.message?.content ?? '';
     return NextResponse.json({ summary: text });
   } catch (error) {
     console.error('Summarise error:', error);
