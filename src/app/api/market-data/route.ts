@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { MarketQuote } from '@/lib/types';
+import yahooFinance from 'yahoo-finance2';
+import type { MarketQuote } from '@/lib/types';
 
 const FMP_BASE = 'https://financialmodelingprep.com/api/v3';
 
@@ -36,7 +37,31 @@ interface FMPQuote {
   changesPercentage: number;
 }
 
-async function fetchQuotes(symbols: string[], apiKey: string): Promise<FMPQuote[]> {
+async function fetchIndicesFromYahoo(): Promise<Map<string, MarketQuote>> {
+  const result = new Map<string, MarketQuote>();
+  await Promise.allSettled(
+    SYMBOLS.indices.map(async ({ symbol, name }) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const quote: any = await yahooFinance.quote(symbol);
+      if (quote?.regularMarketPrice != null) {
+        const price = quote.regularMarketPrice;
+        const change = quote.regularMarketChange ?? 0;
+        const changesPercentage = quote.regularMarketChangePercent ?? 0;
+        result.set(symbol, {
+          symbol,
+          name,
+          price,
+          change: parseFloat(change.toFixed(2)),
+          changesPercentage: parseFloat(changesPercentage.toFixed(2)),
+          type: 'index',
+        });
+      }
+    })
+  );
+  return result;
+}
+
+async function fetchFMPQuotes(symbols: string[], apiKey: string): Promise<FMPQuote[]> {
   const joined = symbols.join(',');
   const res = await fetch(
     `${FMP_BASE}/quote/${joined}?apikey=${apiKey}`,
@@ -48,9 +73,9 @@ async function fetchQuotes(symbols: string[], apiKey: string): Promise<FMPQuote[
 
 function buildMockQuote(symbol: string, name: string, type: 'index' | 'commodity' | 'fx'): MarketQuote {
   const mockPrices: Record<string, number> = {
-    '^GSPC': 5318.42, '^DJI': 39387.76, '^IXIC': 16542.83, '^FTSE': 8246.10, '^GDAXI': 18187.56, '^N225': 38820.10,
-    'GCUSD': 2328.50, 'SIUSD': 27.42, 'CLUSD': 79.85, 'BZUSD': 83.42, 'NGUSD': 2.14,
-    'EURUSD': 1.0842, 'GBPUSD': 1.2734, 'USDJPY': 154.62, 'USDCHF': 0.9102, 'AUDUSD': 0.6521, 'USDCNH': 7.2418,
+    '^GSPC': 7365.00, '^DJI': 49910.00, '^IXIC': 25970.00, '^FTSE': 8620.00, '^GDAXI': 23500.00, '^N225': 37400.00,
+    'GCUSD': 3320.00, 'SIUSD': 32.50, 'CLUSD': 58.20, 'BZUSD': 61.80, 'NGUSD': 3.45,
+    'EURUSD': 1.1320, 'GBPUSD': 1.3280, 'USDJPY': 143.20, 'USDCHF': 0.8210, 'AUDUSD': 0.6440, 'USDCNH': 7.2100,
   };
   const price = mockPrices[symbol] || 100;
   const change = (Math.random() - 0.48) * price * 0.015;
@@ -67,29 +92,41 @@ function buildMockQuote(symbol: string, name: string, type: 'index' | 'commodity
 export async function GET() {
   const apiKey = process.env.FMP_API_KEY || 'demo';
 
-  const allSymbols = [
-    ...SYMBOLS.indices.map(s => s.symbol),
+  // Indices: always fetch from Yahoo Finance (no API key needed, live prices)
+  let indicesMap = new Map<string, MarketQuote>();
+  try {
+    indicesMap = await fetchIndicesFromYahoo();
+  } catch {
+    // fall through to mock
+  }
+
+  const indices = SYMBOLS.indices.map(({ symbol, name }) =>
+    indicesMap.get(symbol) ?? buildMockQuote(symbol, name, 'index')
+  );
+
+  // Commodities + FX: fetch from FMP
+  const fmpSymbols = [
     ...SYMBOLS.commodities.map(s => s.symbol),
     ...SYMBOLS.fx.map(s => s.symbol),
   ];
 
-  let quotes: FMPQuote[] = [];
+  let fmpQuotes: FMPQuote[] = [];
   if (apiKey !== 'demo') {
     try {
-      quotes = await fetchQuotes(allSymbols, apiKey);
+      fmpQuotes = await fetchFMPQuotes(fmpSymbols, apiKey);
     } catch {
       // fall through to mock
     }
   }
 
-  const quoteMap = new Map(quotes.map(q => [q.symbol, q]));
+  const fmpMap = new Map(fmpQuotes.map(q => [q.symbol, q]));
 
-  const buildCategory = (
+  const buildFMPCategory = (
     items: { symbol: string; name: string }[],
-    type: 'index' | 'commodity' | 'fx'
+    type: 'commodity' | 'fx'
   ): MarketQuote[] =>
     items.map(({ symbol, name }) => {
-      const q = quoteMap.get(symbol);
+      const q = fmpMap.get(symbol);
       if (q) {
         return { symbol, name, price: q.price, change: q.change, changesPercentage: q.changesPercentage, type };
       }
@@ -97,9 +134,9 @@ export async function GET() {
     });
 
   return NextResponse.json({
-    indices: buildCategory(SYMBOLS.indices, 'index'),
-    commodities: buildCategory(SYMBOLS.commodities, 'commodity'),
-    fx: buildCategory(SYMBOLS.fx, 'fx'),
+    indices,
+    commodities: buildFMPCategory(SYMBOLS.commodities, 'commodity'),
+    fx: buildFMPCategory(SYMBOLS.fx, 'fx'),
   }, {
     headers: { 'Cache-Control': 's-maxage=60, stale-while-revalidate=120' },
   });
