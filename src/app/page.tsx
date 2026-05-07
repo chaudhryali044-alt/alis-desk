@@ -61,6 +61,12 @@ export default function Home() {
     };
   }, [fetchNews, fetchMarkets]);
 
+  const handleWhatsApp = async () => {
+    const res = await fetch('/api/whatsapp-now', { method: 'POST' });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || 'Unknown error');
+  };
+
   const handleBriefing = async () => {
     setShowBriefing(true);
     setBriefingLoading(true);
@@ -90,7 +96,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background: 'var(--bg)' }}>
-      <Header onBriefing={handleBriefing} briefingLoading={briefingLoading} />
+      <Header onBriefing={handleBriefing} briefingLoading={briefingLoading} onWhatsApp={handleWhatsApp} />
       <TickerStrip items={tickerItems} />
 
       <main className="flex-1 flex gap-4 p-4 max-w-screen-2xl mx-auto w-full">

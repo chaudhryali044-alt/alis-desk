@@ -1,7 +1,7 @@
 import Groq from 'groq-sdk';
 import { fetchAllNews } from './rss';
 
-type Edition = 'morning' | 'midnight';
+export type Edition = 'morning' | 'midnight' | 'manual';
 
 interface Headline {
   title: string;
@@ -37,7 +37,9 @@ function buildPrompt(edition: Edition, headlines: Headline[]): string {
   const editionContext =
     edition === 'morning'
       ? `This is the MORNING BRIEFING (8am Pakistan Standard Time). Cover overnight developments from Asia and any pre-market moves in Europe/US. Help the reader set up their trading day — what happened while they slept, what they need to know before markets open.`
-      : `This is the MIDNIGHT RECAP (12am Pakistan Standard Time). Recap what happened during the full trading day globally. Summarise key moves, outcomes, and surprises. Point towards what to watch tomorrow — upcoming data, earnings, central bank events, or geopolitical risks.`;
+      : edition === 'midnight'
+      ? `This is the MIDNIGHT RECAP (12am Pakistan Standard Time). Recap what happened during the full trading day globally. Summarise key moves, outcomes, and surprises. Point towards what to watch tomorrow — upcoming data, earnings, central bank events, or geopolitical risks.`
+      : `This is an ON-DEMAND BRIEFING requested manually. Give a comprehensive snapshot of the current market situation — what's happening right now, what's been the dominant theme today, and what a finance professional needs to be across immediately.`;
 
   return `You are a senior investment banking analyst writing a WhatsApp briefing for finance professionals in Pakistan and the Gulf. Today is ${date}.
 
@@ -90,7 +92,9 @@ export async function generateWhatsAppBriefing(edition: Edition): Promise<string
   const header =
     edition === 'morning'
       ? `🌅 *ALI'S DESK — MORNING BRIEFING*`
-      : `🌙 *ALI'S DESK — MIDNIGHT RECAP*`;
+      : edition === 'midnight'
+      ? `🌙 *ALI'S DESK — MIDNIGHT RECAP*`
+      : `📲 *ALI'S DESK — ON-DEMAND BRIEFING*`;
 
   const timestamp = `📅 ${formatPKTDate()} · ${formatPKTTime()} PKT`;
   const footer = `\n_Ali's Desk · Financial Intelligence Terminal_`;
