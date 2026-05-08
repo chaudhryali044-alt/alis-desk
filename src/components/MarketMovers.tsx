@@ -6,12 +6,14 @@ import type { Mover } from '@/lib/types';
 interface MoversData {
   gainers: Mover[];
   losers:  Mover[];
+  error?:  string;
 }
 
 function MoverRow({ m, isGainer }: { m: Mover; isGainer: boolean }) {
   const color  = isGainer ? 'var(--positive)' : 'var(--negative)';
   const arrow  = isGainer ? '▲' : '▼';
-  const pctStr = `${isGainer ? '+' : ''}${m.changePct.toFixed(2)}%`;
+  const sign   = m.changePct >= 0 ? '+' : '';
+  const pctStr = `${sign}${m.changePct.toFixed(2)}%`;
 
   return (
     <a
@@ -34,7 +36,7 @@ function MoverRow({ m, isGainer }: { m: Mover; isGainer: boolean }) {
         onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface-3)')}
         onMouseLeave={e => (e.currentTarget.style.background = 'var(--surface-2)')}
       >
-        {/* Ticker + name */}
+        {/* Ticker + name + sector */}
         <div style={{ flex: 1, minWidth: 0 }}>
           <div className="flex items-baseline gap-2">
             <span className="font-data font-bold" style={{ fontSize: 11, color: 'var(--text)' }}>
@@ -42,7 +44,11 @@ function MoverRow({ m, isGainer }: { m: Mover; isGainer: boolean }) {
             </span>
             <span
               className="font-data"
-              style={{ fontSize: 9, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}
+              style={{
+                fontSize: 9, color: 'var(--text-muted)',
+                textTransform: 'uppercase', letterSpacing: '0.06em',
+                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+              }}
             >
               {m.sector}
             </span>
@@ -74,31 +80,14 @@ function MoverRow({ m, isGainer }: { m: Mover; isGainer: boolean }) {
   );
 }
 
-export default function MarketMovers() {
-  const [data,    setData]    = useState<MoversData | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  const fetchMovers = useCallback(async () => {
-    try {
-      const r = await fetch('/api/market-movers');
-      if (!r.ok) throw new Error('non-ok');
-      const d = await r.json();
-      setData(d);
-    } catch { /* keep existing */ } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchMovers();
-    const t = setInterval(fetchMovers, 60_000);
-    return () => clearInterval(t);
-  }, [fetchMovers]);
-
-  const SkeletonRows = () => (
+function SkeletonRows() {
+  return (
     <div className="space-y-1.5">
       {[...Array(5)].map((_, i) => (
-        <div key={i} style={{ display: 'flex', gap: 10, padding: '9px 12px', background: 'var(--surface-2)', borderRadius: 5 }}>
+        <div
+          key={i}
+          style={{ display: 'flex', gap: 10, padding: '9px 12px', background: 'var(--surface-2)', borderRadius: 5 }}
+        >
           <div style={{ flex: 1 }}>
             <div className="skeleton h-2.5 w-16 mb-1.5" />
             <div className="skeleton h-2 w-36" />
@@ -111,12 +100,35 @@ export default function MarketMovers() {
       ))}
     </div>
   );
+}
+
+export default function MarketMovers() {
+  const [data,    setData]    = useState<MoversData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const fetchMovers = useCallback(async () => {
+    try {
+      const r = await fetch('/api/market-movers');
+      if (!r.ok) throw new Error('non-ok');
+      const d: MoversData = await r.json();
+      setData(d);
+    } catch {
+      /* keep existing data on refresh failures */
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchMovers();
+    const t = setInterval(fetchMovers, 60_000);
+    return () => clearInterval(t);
+  }, [fetchMovers]);
+
+  const unavailable = !loading && (!data || data.error || (data.gainers.length === 0 && data.losers.length === 0));
 
   return (
-    <div
-      className="card"
-      style={{ padding: '16px 16px 12px' }}
-    >
+    <div className="card" style={{ padding: '16px 16px 12px' }}>
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <span className="section-label">Market Movers</span>
@@ -126,15 +138,22 @@ export default function MarketMovers() {
       </div>
 
       {loading ? (
-        <div>
-          <div className="skeleton h-2 w-16 mb-3" />
-          <SkeletonRows />
-          <div className="skeleton h-2 w-14 mt-4 mb-3" />
-          <SkeletonRows />
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <div className="skeleton h-2 w-20 mb-3" />
+            <SkeletonRows />
+          </div>
+          <div>
+            <div className="skeleton h-2 w-16 mb-3" />
+            <SkeletonRows />
+          </div>
         </div>
-      ) : !data ? (
-        <div className="font-data text-[11px]" style={{ color: 'var(--text-muted)', padding: '12px 0' }}>
-          Market movers temporarily unavailable.
+      ) : unavailable ? (
+        <div
+          className="font-data text-[11px]"
+          style={{ color: 'var(--text-muted)', padding: '20px 0', textAlign: 'center' }}
+        >
+          Live market data unavailable — retrying shortly
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-4">
@@ -146,7 +165,7 @@ export default function MarketMovers() {
             >
               ▲ Top Gainers
             </div>
-            {data.gainers.map(m => (
+            {data!.gainers.map(m => (
               <MoverRow key={m.symbol} m={m} isGainer={true} />
             ))}
           </div>
@@ -159,7 +178,7 @@ export default function MarketMovers() {
             >
               ▼ Top Losers
             </div>
-            {data.losers.map(m => (
+            {data!.losers.map(m => (
               <MoverRow key={m.symbol} m={m} isGainer={false} />
             ))}
           </div>

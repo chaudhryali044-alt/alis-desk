@@ -4,37 +4,37 @@ import Groq from 'groq-sdk';
 
 export const dynamic = 'force-dynamic';
 
-interface RawMover {
-  symbol: string;
-  name: string;
-  price: number;
+// Representative S&P 500 basket across all sectors — real quotes, sorted by % change
+const WATCHLIST = [
+  // Technology
+  'AAPL', 'MSFT', 'NVDA', 'META', 'GOOGL', 'AMZN', 'TSLA', 'AVGO', 'AMD', 'INTC',
+  'ORCL', 'CRM', 'ADBE', 'QCOM', 'TXN',
+  // Financials
+  'JPM', 'BAC', 'WFC', 'GS', 'MS', 'V', 'MA', 'AXP', 'C', 'BLK',
+  // Healthcare
+  'JNJ', 'UNH', 'LLY', 'ABBV', 'MRK', 'PFE', 'TMO', 'ABT', 'AMGN', 'BMY',
+  // Energy
+  'XOM', 'CVX', 'COP', 'SLB', 'OXY',
+  // Consumer Discretionary / Staples
+  'WMT', 'COST', 'HD', 'PG', 'KO', 'PEP', 'MCD', 'NKE', 'SBUX', 'LOW',
+  // Industrials
+  'CAT', 'BA', 'GE', 'HON', 'UNP', 'RTX', 'LMT', 'DE', 'FDX',
+  // Communication / Media
+  'NFLX', 'DIS', 'CMCSA', 'T', 'VZ',
+  // Utilities / Materials / REITs
+  'NEE', 'DUK', 'LIN', 'SHW', 'AMT',
+];
+
+interface Mover {
+  symbol:    string;
+  name:      string;
+  price:     number;
   changePct: number;
-  sector: string;
+  sector:    string;
+  reason:    string;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function screenerFetch(scrId: string): Promise<RawMover[]> {
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result = await (yahooFinance.screener as any)({
-      scrIds: scrId,
-      count: 6,
-    });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const quotes: any[] = result?.quotes ?? [];
-    return quotes.slice(0, 5).map(q => ({
-      symbol:    q.symbol ?? '',
-      name:      q.shortName ?? q.longName ?? q.symbol ?? '',
-      price:     q.regularMarketPrice ?? 0,
-      changePct: q.regularMarketChangePercent ?? 0,
-      sector:    q.sector ?? 'Unknown',
-    }));
-  } catch {
-    return [];
-  }
-}
-
-async function generateReasons(movers: RawMover[]): Promise<string[]> {
+async function generateReasons(movers: Omit<Mover, 'reason'>[]): Promise<string[]> {
   if (!movers.length) return [];
   try {
     const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
@@ -49,7 +49,7 @@ async function generateReasons(movers: RawMover[]): Promise<string[]> {
       messages: [{
         role: 'user',
         content:
-          `For each stock below, write ONE sharp sentence (max 15 words) explaining today's move. ` +
+          `For each stock below, write ONE sharp sentence (max 15 words) explaining today's likely move driver. ` +
           `Return JSON: { "reasons": ["reason1", "reason2", ...] } in the same order.\n\n${lines}`,
       }],
     });
@@ -61,29 +61,38 @@ async function generateReasons(movers: RawMover[]): Promise<string[]> {
   }
 }
 
-const GAINER_FALLBACK: RawMover[] = [
-  { symbol: 'NVDA',  name: 'NVIDIA',          price: 950,  changePct: 4.8,  sector: 'Technology' },
-  { symbol: 'META',  name: 'Meta Platforms',   price: 580,  changePct: 3.5,  sector: 'Technology' },
-  { symbol: 'AMZN',  name: 'Amazon',           price: 225,  changePct: 2.9,  sector: 'Consumer Cyclical' },
-  { symbol: 'TSLA',  name: 'Tesla',            price: 295,  changePct: 2.4,  sector: 'Consumer Cyclical' },
-  { symbol: 'MSFT',  name: 'Microsoft',        price: 465,  changePct: 1.8,  sector: 'Technology' },
-];
-const LOSER_FALLBACK: RawMover[] = [
-  { symbol: 'PFE',   name: 'Pfizer',           price: 28,   changePct: -4.2, sector: 'Healthcare' },
-  { symbol: 'BA',    name: 'Boeing',           price: 165,  changePct: -3.1, sector: 'Industrials' },
-  { symbol: 'XOM',   name: 'Exxon Mobil',      price: 112,  changePct: -2.5, sector: 'Energy' },
-  { symbol: 'CVS',   name: 'CVS Health',       price: 55,   changePct: -2.1, sector: 'Healthcare' },
-  { symbol: 'T',     name: 'AT&T',             price: 22,   changePct: -1.7, sector: 'Communication' },
-];
-
 export async function GET() {
-  const [gainersRaw, losersRaw] = await Promise.all([
-    screenerFetch('day_gainers'),
-    screenerFetch('day_losers'),
-  ]);
+  // Fetch all quotes in parallel — quote() doesn't need crumb auth
+  const results = await Promise.allSettled(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    WATCHLIST.map(sym => yahooFinance.quote(sym) as Promise<any>)
+  );
 
-  const gainers = gainersRaw.length >= 3 ? gainersRaw : GAINER_FALLBACK;
-  const losers  = losersRaw.length  >= 3 ? losersRaw  : LOSER_FALLBACK;
+  const quotes = results
+    .map((r, i) => {
+      if (r.status !== 'fulfilled' || !r.value) return null;
+      const q = r.value;
+      if (q.regularMarketPrice == null || q.regularMarketChangePercent == null) return null;
+      return {
+        symbol:    WATCHLIST[i],
+        name:      q.shortName ?? q.longName ?? WATCHLIST[i],
+        price:     q.regularMarketPrice as number,
+        changePct: q.regularMarketChangePercent as number,
+        sector:    (q.sector as string) ?? 'Unknown',
+      };
+    })
+    .filter((q): q is NonNullable<typeof q> => q !== null);
+
+  if (quotes.length === 0) {
+    return NextResponse.json(
+      { gainers: [], losers: [], error: 'Live market data unavailable' },
+      { headers: { 'Cache-Control': 's-maxage=60, stale-while-revalidate=120' } }
+    );
+  }
+
+  const sorted = [...quotes].sort((a, b) => b.changePct - a.changePct);
+  const gainers = sorted.slice(0, 5);
+  const losers  = sorted.slice(-5).reverse();
 
   const [gainerReasons, loserReasons] = await Promise.all([
     generateReasons(gainers),
