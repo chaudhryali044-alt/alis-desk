@@ -143,7 +143,7 @@ export default function Home() {
 
       {/* ── Three-column body ───────────────────────── */}
       <div
-        className="flex-1 grid px-4 py-4 gap-4"
+        className="grid px-4 py-4 gap-4"
         style={{
           gridTemplateColumns: '1fr 1.3fr 1fr',
           alignItems:          'start',
