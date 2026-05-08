@@ -54,17 +54,23 @@ function SkeletonCard() {
 }
 
 export default function EconomyPulse() {
-  const [metrics, setMetrics]   = useState<EconomyMetric[]>([]);
-  const [loading, setLoading]   = useState(true);
+  const [metrics, setMetrics]         = useState<EconomyMetric[]>([]);
+  const [loading, setLoading]         = useState(true);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [error, setError]             = useState(false);
 
   const fetchMetrics = useCallback(async () => {
     try {
       const r = await fetch('/api/economy-pulse');
+      if (!r.ok) throw new Error('non-ok');
       const d = await r.json();
-      setMetrics(d.metrics ?? []);
+      const m: EconomyMetric[] = d.metrics ?? [];
+      setMetrics(m);
+      setError(m.length === 0);
       setLastRefresh(new Date());
-    } catch { /* silent */ } finally {
+    } catch {
+      setError(true);
+    } finally {
       setLoading(false);
     }
   }, []);
@@ -84,17 +90,28 @@ export default function EconomyPulse() {
         <span className="section-label">Economy Pulse</span>
         <div className="gold-rule flex-1" />
         <span className="font-data text-[9px]" style={{ color: 'var(--text-muted)' }}>
-          {lastRefresh
-            ? `Updated ${lastRefresh.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })} · auto-refreshes every 60s`
+          {loading
+            ? 'Fetching live data…'
+            : lastRefresh
+            ? `Updated ${lastRefresh.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })} · refreshes every 60s`
             : 'Live data'}
         </span>
       </div>
 
-      <div className="flex overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
-        {loading
-          ? [...Array(7)].map((_, i) => <SkeletonCard key={i} />)
-          : metrics.map(m => <MetricCard key={m.key} m={m} />)
-        }
+      {/* min-height ensures the strip never collapses to 0 */}
+      <div className="flex overflow-x-auto" style={{ scrollbarWidth: 'none', minHeight: 88 }}>
+        {loading ? (
+          [...Array(7)].map((_, i) => <SkeletonCard key={i} />)
+        ) : error || metrics.length === 0 ? (
+          <div
+            className="flex items-center justify-center w-full font-data text-[11px]"
+            style={{ color: 'var(--text-muted)', padding: '0 20px' }}
+          >
+            Market data temporarily unavailable — retrying in 60s
+          </div>
+        ) : (
+          metrics.map(m => <MetricCard key={m.key} m={m} />)
+        )}
       </div>
     </section>
   );

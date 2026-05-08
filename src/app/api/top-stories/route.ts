@@ -6,8 +6,6 @@ import type { TopStory } from '@/lib/types';
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
-  const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
-
   const articles = await fetchAllNews();
 
   const today = new Date().toLocaleDateString('en-GB', {
@@ -42,6 +40,7 @@ Return ONLY valid JSON — an array of exactly 10 objects. No markdown, no pream
   let stories: TopStory[] = [];
 
   try {
+    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
     const completion = await groq.chat.completions.create({
       model: 'llama-3.3-70b-versatile',
       max_tokens: 1200,

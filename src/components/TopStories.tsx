@@ -188,8 +188,9 @@ export default function TopStories({ stories, loading }: Props) {
           : stories.length === 0
           ? (
             <div className="flex flex-col items-center justify-center h-full py-16" style={{ color: 'var(--text-muted)' }}>
-              <span className="text-3xl mb-3">📰</span>
-              <p className="text-sm">Stories loading…</p>
+              <span className="text-3xl mb-3">&#128269;</span>
+              <p className="text-sm">No stories available</p>
+              <p className="font-data text-[10px] mt-1">RSS feeds may be temporarily unavailable</p>
             </div>
           )
           : stories.map((s, i) => <StoryCard key={i} story={s} rank={i + 1} />)

@@ -35,7 +35,6 @@ async function fetchQuote(symbol: string): Promise<{
 }
 
 async function generateAnalyses(dataLines: string[]): Promise<Record<string, string>> {
-  const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
   const prompt = `You are a senior investment banker. Given these live market levels, write ONE razor-sharp sentence (under 18 words) per metric explaining what it means RIGHT NOW for markets, valuations, or deal flow. No preamble, no labels in the sentence.
 
 ${dataLines.join('\n')}
@@ -44,6 +43,7 @@ Return ONLY valid JSON with these exact keys:
 { "sp500": "...", "vix": "...", "oil": "...", "gold": "...", "tenYear": "...", "dxy": "...", "copper": "..." }`;
 
   try {
+    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
     const completion = await groq.chat.completions.create({
       model: 'llama-3.1-8b-instant',
       max_tokens: 350,

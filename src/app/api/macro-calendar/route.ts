@@ -49,7 +49,6 @@ function getWeekRange(): { from: string; to: string } {
 
 async function generateEventAnalyses(events: { event: string; country: string; impact: string }[]): Promise<string[]> {
   if (!events.length) return [];
-  const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
   const lines = events.map((e, i) => `${i + 1}. [${e.country}] ${e.event} (${e.impact} impact)`).join('\n');
 
@@ -61,6 +60,7 @@ Return ONLY a JSON array of strings, one per event, in the same order:
 ["...", "...", ...]`;
 
   try {
+    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
     const completion = await groq.chat.completions.create({
       model: 'llama-3.1-8b-instant',
       max_tokens: 400,

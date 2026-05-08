@@ -208,9 +208,20 @@ body {
 .skeleton {
   background: linear-gradient(
     90deg,
-    var(--surface-2) 25%,
-    var(--surface-3) 50%,
-    var(--surface-2) 75%
+    #222222 25%,
+    #2e2e2e 50%,
+    #222222 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s infinite;
+  border-radius: 3px;
+}
+.light .skeleton {
+  background: linear-gradient(
+    90deg,
+    #ddd5c5 25%,
+    #cfc5b0 50%,
+    #ddd5c5 75%
   );
   background-size: 200% 100%;
   animation: shimmer 1.6s infinite;
