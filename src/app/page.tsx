@@ -8,8 +8,7 @@ import TopStories from '@/components/TopStories';
 import IntelligencePanel from '@/components/IntelligencePanel';
 import DailyBriefing from '@/components/DailyBriefing';
 import ChatBox from '@/components/ChatBox';
-import MarketMovers from '@/components/MarketMovers';
-import EarningsCalendar from '@/components/EarningsCalendar';
+import MarketPulse from '@/components/MarketPulse';
 import type {
   DealArticle, TopStory, MacroEvent, MarketVoice, NewsArticle,
 } from '@/lib/types';
@@ -25,8 +24,8 @@ export default function Home() {
   const [dealsLoading, setDealsLoading] = useState(true);
 
   /* ── Top Stories ──────────────────────────────────── */
-  const [stories,          setStories]          = useState<TopStory[]>([]);
-  const [storiesLoading,   setStoriesLoading]   = useState(true);
+  const [stories,        setStories]        = useState<TopStory[]>([]);
+  const [storiesLoading, setStoriesLoading] = useState(true);
 
   /* ── Macro Calendar ───────────────────────────────── */
   const [events,        setEvents]        = useState<EnrichedEvent[]>([]);
@@ -130,18 +129,18 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: 'var(--bg)' }}>
-      {/* ── Navbar ──────────────────────────────────── */}
+    <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
+      {/* ── Navbar ────────────────────────────────────── */}
       <Navbar
         onBriefing={handleBriefing}
         briefingLoading={briefingLoading}
         onWhatsApp={handleWhatsApp}
       />
 
-      {/* ── Live ticker bar (self-fetching, auto-refreshes every 60s) */}
+      {/* ── Live ticker bar ───────────────────────────── */}
       <EconomyPulse />
 
-      {/* ── Three-column body ───────────────────────── */}
+      {/* ── Three-column body ─────────────────────────── */}
       <div
         className="grid px-4 py-4 gap-4"
         style={{
@@ -157,13 +156,13 @@ export default function Home() {
           <DealFlow deals={deals} loading={dealsLoading} />
         </div>
 
-        {/* Centre — Today's Briefing */}
+        {/* Centre — Top Stories */}
         <div style={{ height: 'calc(100vh - 116px)', minHeight: 600 }}>
           <TopStories stories={stories} loading={storiesLoading} />
         </div>
 
         {/* Right — Intelligence Panel */}
-        <div>
+        <div style={{ height: 'calc(100vh - 116px)', minHeight: 600, overflowY: 'auto' }}>
           <IntelligencePanel
             events={events}
             eventsLoading={eventsLoading}
@@ -173,21 +172,10 @@ export default function Home() {
         </div>
       </div>
 
-      {/* ── Bottom row — Market Movers + Earnings ───── */}
-      <div
-        className="grid px-4 pb-6 gap-4"
-        style={{
-          gridTemplateColumns: '1fr 1fr',
-          maxWidth:            1600,
-          margin:              '0 auto',
-          width:               '100%',
-        }}
-      >
-        <MarketMovers />
-        <EarningsCalendar />
-      </div>
+      {/* ── Today's Market Pulse — full width ─────────── */}
+      <MarketPulse />
 
-      {/* ── Modals / Overlays ───────────────────────── */}
+      {/* ── Modals / Overlays ─────────────────────────── */}
       {showBriefing && (
         <DailyBriefing
           briefing={briefing}
