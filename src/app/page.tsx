@@ -10,16 +10,17 @@ import MarketSnapshot from '@/components/MarketSnapshot';
 import DailyBriefing from '@/components/DailyBriefing';
 import ChatBox from '@/components/ChatBox';
 import type {
-  EconomyMetric, DealArticle, TopStory,
-  FearGreedData, MacroEvent, IPOItem, SnapshotQuote,
+  DealArticle, TopStory,
+  MacroEvent, MarketVoice, SnapshotQuote,
   NewsArticle,
 } from '@/lib/types';
 
-export default function Home() {
-  /* ── Economy Pulse ────────────────────────────────── */
-  const [metrics, setMetrics]           = useState<EconomyMetric[]>([]);
-  const [metricsLoading, setMetricsLoading] = useState(true);
+interface EnrichedEvent extends MacroEvent {
+  sourceLink?: string;
+  analysis?: string;
+}
 
+export default function Home() {
   /* ── Deal Flow ────────────────────────────────────── */
   const [deals, setDeals]               = useState<DealArticle[]>([]);
   const [dealsLoading, setDealsLoading] = useState(true);
@@ -28,18 +29,13 @@ export default function Home() {
   const [stories, setStories]           = useState<TopStory[]>([]);
   const [storiesLoading, setStoriesLoading] = useState(true);
 
-  /* ── Fear & Greed ─────────────────────────────────── */
-  const [fearGreed, setFearGreed]       = useState<FearGreedData | null>(null);
-  const [fgLoading, setFgLoading]       = useState(true);
-
   /* ── Macro Calendar ───────────────────────────────── */
-  const [events, setEvents]             = useState<MacroEvent[]>([]);
+  const [events, setEvents]             = useState<EnrichedEvent[]>([]);
   const [eventsLoading, setEventsLoading] = useState(true);
 
-  /* ── IPO Calendar ─────────────────────────────────── */
-  const [ipoUpcoming, setIpoUpcoming]   = useState<IPOItem[]>([]);
-  const [ipoRecent, setIpoRecent]       = useState<IPOItem[]>([]);
-  const [ipoLoading, setIpoLoading]     = useState(true);
+  /* ── Market Voices ────────────────────────────────── */
+  const [voices, setVoices]             = useState<MarketVoice[]>([]);
+  const [voicesLoading, setVoicesLoading] = useState(true);
 
   /* ── Market Snapshot ──────────────────────────────── */
   const [snapQuotes, setSnapQuotes]     = useState<SnapshotQuote[]>([]);
@@ -50,18 +46,10 @@ export default function Home() {
   const [briefingLoading, setBriefingLoading] = useState(false);
   const [showBriefing, setShowBriefing] = useState(false);
 
-  /* ── Chat context (all articles, refreshed with deals) */
+  /* ── Chat context ─────────────────────────────────── */
   const [allArticles, setAllArticles]   = useState<NewsArticle[]>([]);
 
   /* ── Fetchers ─────────────────────────────────────── */
-  const fetchMetrics = useCallback(async () => {
-    try {
-      const r = await fetch('/api/economy-pulse');
-      const d = await r.json();
-      setMetrics(d.metrics ?? []);
-    } catch { /* silent */ } finally { setMetricsLoading(false); }
-  }, []);
-
   const fetchDeals = useCallback(async () => {
     try {
       const r = await fetch('/api/deals');
@@ -78,14 +66,6 @@ export default function Home() {
     } catch { /* silent */ } finally { setStoriesLoading(false); }
   }, []);
 
-  const fetchFearGreed = useCallback(async () => {
-    try {
-      const r = await fetch('/api/fear-greed');
-      const d = await r.json();
-      setFearGreed(d);
-    } catch { /* silent */ } finally { setFgLoading(false); }
-  }, []);
-
   const fetchCalendar = useCallback(async () => {
     try {
       const r = await fetch('/api/macro-calendar');
@@ -94,13 +74,12 @@ export default function Home() {
     } catch { /* silent */ } finally { setEventsLoading(false); }
   }, []);
 
-  const fetchIPO = useCallback(async () => {
+  const fetchVoices = useCallback(async () => {
     try {
-      const r = await fetch('/api/ipo-calendar');
+      const r = await fetch('/api/market-voices');
       const d = await r.json();
-      setIpoUpcoming(d.upcoming ?? []);
-      setIpoRecent(d.recent ?? []);
-    } catch { /* silent */ } finally { setIpoLoading(false); }
+      setVoices(d.voices ?? []);
+    } catch { /* silent */ } finally { setVoicesLoading(false); }
   }, []);
 
   const fetchSnapshot = useCallback(async () => {
@@ -111,7 +90,6 @@ export default function Home() {
     } catch { /* silent */ } finally { setSnapLoading(false); }
   }, []);
 
-  // Feed articles to ChatBox (re-uses existing /api/news)
   const fetchAllNews = useCallback(async () => {
     try {
       const r = await fetch('/api/news');
@@ -121,22 +99,22 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    // Initial parallel load
     Promise.all([
-      fetchMetrics(), fetchDeals(), fetchStories(),
-      fetchFearGreed(), fetchCalendar(), fetchIPO(),
-      fetchSnapshot(), fetchAllNews(),
+      fetchDeals(), fetchStories(), fetchCalendar(),
+      fetchVoices(), fetchSnapshot(), fetchAllNews(),
     ]);
 
-    // Refresh intervals
     const t1 = setInterval(fetchDeals,    10 * 60 * 1000);
     const t2 = setInterval(fetchStories,  30 * 60 * 1000);
     const t3 = setInterval(fetchSnapshot,       60 * 1000);
-    const t4 = setInterval(fetchFearGreed, 60 * 60 * 1000);
+    const t4 = setInterval(fetchVoices,   30 * 60 * 1000);
     const t5 = setInterval(fetchAllNews,   5 * 60 * 1000);
 
-    return () => { clearInterval(t1); clearInterval(t2); clearInterval(t3); clearInterval(t4); clearInterval(t5); };
-  }, [fetchMetrics, fetchDeals, fetchStories, fetchFearGreed, fetchCalendar, fetchIPO, fetchSnapshot, fetchAllNews]);
+    return () => {
+      clearInterval(t1); clearInterval(t2); clearInterval(t3);
+      clearInterval(t4); clearInterval(t5);
+    };
+  }, [fetchDeals, fetchStories, fetchCalendar, fetchVoices, fetchSnapshot, fetchAllNews]);
 
   /* ── Daily Briefing handler ───────────────────────── */
   const handleBriefing = async () => {
@@ -166,10 +144,7 @@ export default function Home() {
   };
 
   return (
-    <div
-      className="min-h-screen flex flex-col"
-      style={{ background: 'var(--bg)' }}
-    >
+    <div className="min-h-screen flex flex-col" style={{ background: 'var(--bg)' }}>
       {/* ── Navbar ──────────────────────────────────── */}
       <Navbar
         onBriefing={handleBriefing}
@@ -177,8 +152,8 @@ export default function Home() {
         onWhatsApp={handleWhatsApp}
       />
 
-      {/* ── Economy Pulse ───────────────────────────── */}
-      <EconomyPulse metrics={metrics} loading={metricsLoading} />
+      {/* ── Economy Pulse (self-fetching, auto-refreshes every 60s) */}
+      <EconomyPulse />
 
       {/* ── Three-column body ───────────────────────── */}
       <div
@@ -204,13 +179,10 @@ export default function Home() {
         {/* Right — Intelligence Panel */}
         <div>
           <IntelligencePanel
-            fearGreed={fearGreed}
-            fearGreedLoading={fgLoading}
             events={events}
             eventsLoading={eventsLoading}
-            ipoUpcoming={ipoUpcoming}
-            ipoRecent={ipoRecent}
-            ipoLoading={ipoLoading}
+            voices={voices}
+            voicesLoading={voicesLoading}
           />
         </div>
       </div>

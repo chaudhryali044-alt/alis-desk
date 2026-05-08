@@ -1,25 +1,26 @@
 'use client';
 
+import { useState } from 'react';
 import type { TopStory, RelevanceTag } from '@/lib/types';
 
 const SOURCE_COLORS: Record<string, { bg: string; text: string }> = {
-  Reuters:        { bg: '#ff6600',  text: '#fff'     },
-  CNBC:           { bg: '#003366',  text: '#fff'     },
-  'FT':           { bg: '#FFF1E5',  text: '#a0522d'  },
-  'The Economist':{ bg: '#cc0000',  text: '#fff'     },
-  'FN London':    { bg: '#0a1628',  text: '#c9a84c'  },
-  MarketWatch:    { bg: '#1a3a2a',  text: '#2ecc71'  },
-  Bloomberg:      { bg: '#1a1a2e',  text: '#6495ed'  },
-  WSJ:            { bg: '#1d2d50',  text: '#fff'     },
+  Reuters:         { bg: '#ff6600',  text: '#fff'    },
+  CNBC:            { bg: '#003366',  text: '#fff'    },
+  'FT':            { bg: '#FFF1E5',  text: '#a0522d' },
+  'The Economist': { bg: '#cc0000',  text: '#fff'    },
+  'FN London':     { bg: '#0a1628',  text: '#c9a84c' },
+  MarketWatch:     { bg: '#1a3a2a',  text: '#2ecc71' },
+  Bloomberg:       { bg: '#1a1a2e',  text: '#6495ed' },
+  WSJ:             { bg: '#1d2d50',  text: '#fff'    },
 };
 
 function TagBadge({ tag }: { tag: RelevanceTag }) {
   const map: Record<RelevanceTag, string> = {
-    Markets:     'tag-markets',
-    Macro:       'tag-macro',
-    Earnings:    'tag-earnings',
-    Geopolitical:'tag-geopolitical',
-    Deals:       'tag-deals',
+    Markets:      'tag-markets',
+    Macro:        'tag-macro',
+    Earnings:     'tag-earnings',
+    Geopolitical: 'tag-geopolitical',
+    Deals:        'tag-deals',
   };
   return <span className={`tag ${map[tag]}`}>{tag}</span>;
 }
@@ -35,13 +36,34 @@ function timeAgo(dateStr: string): string {
 }
 
 function StoryCard({ story, rank }: { story: TopStory; rank: number }) {
+  const [aiSummary, setAiSummary]   = useState<string | null>(null);
+  const [aiLoading, setAiLoading]   = useState(false);
+
+  const handleSummarise = async () => {
+    if (aiSummary || aiLoading) return;
+    setAiLoading(true);
+    try {
+      const r = await fetch('/api/summarise', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: story.title, description: story.summary }),
+      });
+      const d = await r.json();
+      setAiSummary(d.summary ?? '');
+    } catch {
+      setAiSummary('Unable to generate analysis.');
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
   const colors = SOURCE_COLORS[story.source] ?? { bg: 'var(--surface-3)', text: 'var(--gold)' };
+
   return (
     <article
       className="flex gap-4 px-5 py-4 animate-fade-up"
       style={{ borderBottom: '1px solid var(--border)' }}
     >
-      {/* Rank */}
       <div
         className="font-data text-2xl font-bold shrink-0 leading-none mt-0.5"
         style={{ color: 'var(--border-2)', width: 24, textAlign: 'right' }}
@@ -50,12 +72,8 @@ function StoryCard({ story, rank }: { story: TopStory; rank: number }) {
       </div>
 
       <div className="flex-1 min-w-0">
-        {/* Source + time */}
         <div className="flex items-center gap-2 mb-2 flex-wrap">
-          <span
-            className="source-badge"
-            style={{ background: colors.bg, color: colors.text }}
-          >
+          <span className="source-badge" style={{ background: colors.bg, color: colors.text }}>
             {story.source}
           </span>
           <span className="font-data text-[10px]" style={{ color: 'var(--text-muted)' }}>
@@ -64,7 +82,6 @@ function StoryCard({ story, rank }: { story: TopStory; rank: number }) {
           <TagBadge tag={story.tag} />
         </div>
 
-        {/* Headline */}
         <a
           href={story.link}
           target="_blank"
@@ -75,22 +92,47 @@ function StoryCard({ story, rank }: { story: TopStory; rank: number }) {
           {story.title}
         </a>
 
-        {/* AI summary */}
         <p className="text-[12px] leading-relaxed mb-2" style={{ color: 'var(--text-secondary)' }}>
           {story.summary}
         </p>
 
-        <a
-          href={story.link}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="font-data text-[10px] transition-colors"
-          style={{ color: 'var(--gold-dim)' }}
-          onMouseEnter={e => (e.currentTarget.style.color = 'var(--gold)')}
-          onMouseLeave={e => (e.currentTarget.style.color = 'var(--gold-dim)')}
-        >
-          Read full story →
-        </a>
+        {aiSummary && (
+          <div
+            className="text-[11px] leading-relaxed px-3 py-2 rounded mt-2 mb-2"
+            style={{ background: 'var(--surface-2)', borderLeft: '2px solid var(--gold)', color: 'var(--text-secondary)' }}
+          >
+            <span className="font-data text-[9px] uppercase tracking-widest block mb-1" style={{ color: 'var(--gold)' }}>
+              AI Analysis
+            </span>
+            {aiSummary}
+          </div>
+        )}
+
+        <div className="flex items-center gap-3 mt-1">
+          <a
+            href={story.link}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-data text-[10px] transition-colors"
+            style={{ color: 'var(--gold-dim)' }}
+            onMouseEnter={e => (e.currentTarget.style.color = 'var(--gold)')}
+            onMouseLeave={e => (e.currentTarget.style.color = 'var(--gold-dim)')}
+          >
+            Read full story →
+          </a>
+          {!aiSummary && (
+            <button
+              onClick={handleSummarise}
+              disabled={aiLoading}
+              className="font-data text-[10px] transition-colors"
+              style={{ color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+              onMouseEnter={e => !aiLoading && (e.currentTarget.style.color = 'var(--gold)')}
+              onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}
+            >
+              {aiLoading ? '⏳ Analysing…' : '✦ AI Analysis'}
+            </button>
+          )}
+        </div>
       </div>
     </article>
   );
@@ -121,10 +163,7 @@ interface Props { stories: TopStory[]; loading: boolean; }
 
 export default function TopStories({ stories, loading }: Props) {
   return (
-    <section
-      className="card flex flex-col"
-      style={{ height: '100%', overflow: 'hidden' }}
-    >
+    <section className="card flex flex-col" style={{ height: '100%', overflow: 'hidden' }}>
       <header
         className="flex items-center justify-between px-5 py-3 shrink-0"
         style={{ borderBottom: '1px solid var(--border)' }}
@@ -138,12 +177,12 @@ export default function TopStories({ stories, loading }: Props) {
             className="font-data text-[9px] px-1.5 py-0.5 rounded"
             style={{ background: 'var(--surface-2)', color: 'var(--text-muted)', border: '1px solid var(--border)' }}
           >
-            top 5
+            top 10
           </span>
         </div>
       </header>
 
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-y-auto">
         {loading
           ? [...Array(5)].map((_, i) => <Skeleton key={i} rank={i + 1} />)
           : stories.length === 0

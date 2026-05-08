@@ -92,13 +92,13 @@ export async function generateWhatsAppBriefing(edition: Edition): Promise<string
 
   const header =
     edition === 'morning'
-      ? `🌅 *ALI'S DESK — MORNING BRIEFING*`
+      ? `🌅 *PULSE — MORNING BRIEFING*`
       : edition === 'midnight'
-      ? `🌙 *ALI'S DESK — MIDNIGHT RECAP*`
-      : `📲 *ALI'S DESK — ON-DEMAND BRIEFING*`;
+      ? `🌙 *PULSE — MIDNIGHT RECAP*`
+      : `📲 *PULSE — ON-DEMAND BRIEFING*`;
 
   const timestamp = `📅 ${formatPKTDate()} · ${formatPKTTime()} PKT`;
-  const footer = `\n_Ali's Desk · Financial Intelligence Terminal_`;
+  const footer = `\n_Pulse by Ali Chaudhry · Financial Intelligence_`;
 
   return `${header}\n${timestamp}\n\n${body}${footer}`;
 }

@@ -73,7 +73,10 @@ export default function Navbar({ onBriefing, briefingLoading, onWhatsApp }: Navb
         </div>
         <div>
           <span className="font-display font-bold text-sm tracking-tight" style={{ color: 'var(--gold)' }}>
-            Ali&apos;s Desk
+            Pulse
+          </span>
+          <span className="font-display text-sm tracking-tight ml-1" style={{ color: 'var(--text-secondary)' }}>
+            by Ali Chaudhry
           </span>
           <span className="hidden sm:inline font-data text-[9px] ml-2" style={{ color: 'var(--text-muted)' }}>
             FINANCIAL INTELLIGENCE

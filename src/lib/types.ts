@@ -34,8 +34,21 @@ export interface EconomyMetric {
   label: string;
   value: string;
   unit: string;
-  trend?: 'up' | 'down' | 'flat';
+  change: number;       // daily % change
+  changePts: number;    // absolute change
+  trend: 'up' | 'down' | 'flat';
+  asOf: string;         // "HH:MM" local time
   analysis: string;
+}
+
+export interface MarketVoice {
+  id: string;
+  author: string;
+  platform: string;
+  title: string;
+  link: string;
+  pubDate: string;
+  excerpt: string;
 }
 
 /* ─── Deal Flow ──────────────────────────────────────────────── */

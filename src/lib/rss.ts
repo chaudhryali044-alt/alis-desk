@@ -15,29 +15,20 @@ interface FeedConfig {
 }
 
 const FEEDS: FeedConfig[] = [
-  {
-    url: 'https://feeds.reuters.com/reuters/businessNews',
-    source: 'Reuters',
-    defaultCategory: 'Markets',
-  },
-  {
-    url: 'https://feeds.reuters.com/reuters/topNews',
-    source: 'Reuters',
-    defaultCategory: 'Macro',
-  },
-  {
-    url: 'https://www.cnbc.com/id/100003114/device/rss/rss.html',
-    source: 'CNBC',
-    defaultCategory: 'Markets',
-  },
-  {
-    url: 'https://www.cnbc.com/id/10001147/device/rss/rss.html',
-    source: 'CNBC',
-    defaultCategory: 'Earnings',
-  },
-  {
-    url: 'https://feeds.content.dowjones.io/public/rss/mw_topstories',
-    source: 'MarketWatch',
+  { url: 'https://feeds.reuters.com/reuters/businessNews',          source: 'Reuters',        defaultCategory: 'Markets' },
+  { url: 'https://feeds.reuters.com/reuters/companyNews',           source: 'Reuters',        defaultCategory: 'M&A & Deals' },
+  { url: 'https://www.cnbc.com/id/100003114/device/rss/rss.html',  source: 'CNBC',           defaultCategory: 'Markets' },
+  { url: 'https://www.cnbc.com/id/10001147/device/rss/rss.html',   source: 'CNBC',           defaultCategory: 'Earnings' },
+  { url: 'https://feeds.bloomberg.com/markets/news.rss',           source: 'Bloomberg',      defaultCategory: 'Markets' },
+  { url: 'https://feeds.bloomberg.com/economics/news.rss',         source: 'Bloomberg',      defaultCategory: 'Macro' },
+  { url: 'https://feeds.bloomberg.com/deals/news.rss',             source: 'Bloomberg',      defaultCategory: 'M&A & Deals' },
+  { url: 'https://www.ft.com/markets?format=rss',                  source: 'FT',             defaultCategory: 'Markets' },
+  { url: 'https://www.ft.com/rss/home',                            source: 'FT',             defaultCategory: 'Macro' },
+  { url: 'https://feeds.a.wsj.com/rss/RSSMarketsMain.xml',         source: 'WSJ',            defaultCategory: 'Markets' },
+  { url: 'https://feeds.a.wsj.com/rss/RSSWSJD.xml',               source: 'WSJ',            defaultCategory: 'M&A & Deals' },
+  { url: 'https://www.economist.com/finance-and-economics/rss.xml',source: 'The Economist',  defaultCategory: 'Macro' },
+  { url: 'https://www.fnlondon.com/rss',                           source: 'FN London',      defaultCategory: 'M&A & Deals' },
+  { url: 'https://feeds.content.dowjones.io/public/rss/mw_topstories', source: 'MarketWatch',
     defaultCategory: 'Markets',
   },
   {

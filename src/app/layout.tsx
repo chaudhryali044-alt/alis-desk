@@ -22,7 +22,7 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Ali's Desk — Financial Intelligence",
+  title: 'Pulse by Ali Chaudhry — Financial Intelligence',
   description: 'Real-time deal flow, market intelligence, and AI-powered analysis for finance professionals.',
   icons: {
     icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📈</text></svg>",
