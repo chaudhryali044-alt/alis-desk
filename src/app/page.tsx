@@ -138,11 +138,13 @@ export default function Home() {
       />
 
       {/* ── Live ticker bar ───────────────────────────── */}
-      <EconomyPulse />
+      <div className="animate-section animate-section-1">
+        <EconomyPulse />
+      </div>
 
       {/* ── Three-column body ─────────────────────────── */}
       <div
-        className="grid px-4 py-4 gap-4"
+        className="grid px-4 py-4 gap-4 animate-section animate-section-2"
         style={{
           gridTemplateColumns: '1fr 1.3fr 1fr',
           alignItems:          'start',
@@ -173,7 +175,31 @@ export default function Home() {
       </div>
 
       {/* ── Today's Market Pulse — full width ─────────── */}
-      <MarketPulse />
+      <div className="animate-section animate-section-3">
+        <MarketPulse />
+      </div>
+
+      {/* ── Footer ────────────────────────────────────── */}
+      <footer className="site-footer animate-section animate-section-4">
+        <div
+          className="font-display font-bold"
+          style={{ fontSize: 18, color: 'var(--gold)', marginBottom: 4 }}
+        >
+          Pulse
+        </div>
+        <div
+          className="section-label"
+          style={{ fontSize: 8, letterSpacing: '0.20em', color: 'var(--text-muted)', marginBottom: 2 }}
+        >
+          Financial Intelligence Platform
+        </div>
+        <div
+          className="font-data"
+          style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 6 }}
+        >
+          © {new Date().getFullYear()} Ali Chaudhry · All market data for informational purposes only
+        </div>
+      </footer>
 
       {/* ── Modals / Overlays ─────────────────────────── */}
       {showBriefing && (

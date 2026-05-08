@@ -4,14 +4,14 @@ import { useState } from 'react';
 import type { DealArticle } from '@/lib/types';
 
 const SOURCE_COLORS: Record<string, { bg: string; text: string }> = {
-  Reuters:     { bg: '#ff6600', text: '#fff' },
-  WSJ:         { bg: '#1d2d50', text: '#fff' },
-  'FN London': { bg: '#0a1628', text: '#c9a84c' },
-  Bloomberg:   { bg: '#1a1a2e', text: '#6495ed' },
-  Axios:       { bg: '#ff4444', text: '#fff' },
+  Reuters:       { bg: '#cc5200', text: '#fff' },
+  WSJ:           { bg: '#1d2d50', text: '#fff' },
+  'FN London':   { bg: '#0a1628', text: '#c9a84c' },
+  Bloomberg:     { bg: '#1a1a2e', text: '#6495ed' },
+  Axios:         { bg: '#cc3333', text: '#fff' },
   GlobalCapital: { bg: '#004080', text: '#fff' },
-  PEI:         { bg: '#2d1b4e', text: '#9b59b6' },
-  AltAssets:   { bg: '#1a3a1a', text: '#2ecc71' },
+  PEI:           { bg: '#2d1b4e', text: '#9b59b6' },
+  AltAssets:     { bg: '#1a3a1a', text: '#2ecc71' },
 };
 
 function timeAgo(dateStr: string): string {
@@ -27,7 +27,8 @@ function timeAgo(dateStr: string): string {
 function DealCard({ deal }: { deal: DealArticle }) {
   const [summary, setSummary] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [open, setOpen] = useState(false);
+  const [open,    setOpen]    = useState(false);
+  const [hovered, setHovered] = useState(false);
 
   const colors = SOURCE_COLORS[deal.source] ?? { bg: 'var(--surface-3)', text: 'var(--gold)' };
 
@@ -54,17 +55,22 @@ function DealCard({ deal }: { deal: DealArticle }) {
 
   return (
     <article
-      className="card-hover px-4 py-3 animate-fade-up"
-      style={{ borderBottom: '1px solid var(--border)' }}
+      className="animate-fade-up"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        padding: '14px 16px 12px',
+        borderBottom: '1px solid var(--border)',
+        borderLeft: `2px solid ${hovered ? 'var(--gold)' : 'transparent'}`,
+        transition: 'border-color 0.2s ease, background-color 0.2s ease',
+        background: hovered ? 'var(--surface-2)' : 'transparent',
+      }}
     >
-      <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-        <span
-          className="source-badge"
-          style={{ background: colors.bg, color: colors.text }}
-        >
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, flexWrap: 'wrap' }}>
+        <span className="source-badge" style={{ background: colors.bg, color: colors.text }}>
           {deal.source}
         </span>
-        <span className="font-data text-[10px]" style={{ color: 'var(--text-muted)' }}>
+        <span className="font-data" style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: '0.06em' }}>
           {timeAgo(deal.pubDate)}
         </span>
       </div>
@@ -73,26 +79,39 @@ function DealCard({ deal }: { deal: DealArticle }) {
         href={deal.link}
         target="_blank"
         rel="noopener noreferrer"
-        className="font-display text-[13px] font-semibold leading-snug block hover:text-gold transition-colors"
-        style={{ color: 'var(--text)' }}
+        className="font-display"
+        style={{
+          fontSize: 14, fontWeight: 600, lineHeight: 1.4,
+          display: 'block', marginBottom: 8,
+          color: hovered ? 'var(--gold)' : 'var(--text)',
+          textDecoration: 'none',
+          transition: 'color 0.2s',
+        }}
       >
         {deal.title}
       </a>
 
       {open && summary && (
         <div
-          className="mt-2 text-[11px] leading-relaxed px-3 py-2 rounded animate-fade-up"
-          style={{ background: 'var(--surface-2)', borderLeft: '2px solid var(--gold-dim)', color: 'var(--text-secondary)' }}
+          className="animate-fade-up"
+          style={{
+            fontSize: 11, lineHeight: 1.6,
+            padding: '10px 12px', borderRadius: 3,
+            background: 'var(--surface-2)',
+            borderLeft: '2px solid var(--gold-dim)',
+            color: 'var(--text-secondary)',
+            marginBottom: 8,
+          }}
         >
           {summary.split('\n').filter(Boolean).map((line, i) => <p key={i}>{line}</p>)}
         </div>
       )}
 
-      <div className="flex items-center gap-2 mt-2">
-        <button onClick={handleSummarise} disabled={loading} className="btn-ghost text-[10px] py-1 px-2">
-          {loading ? '…' : summary && open ? '▲ Hide' : summary ? '▼ AI Summary' : '✦ Summarise'}
+      <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
+        <button onClick={handleSummarise} disabled={loading} className="btn-ghost" style={{ fontSize: 9, padding: '3px 8px' }}>
+          {loading ? '…' : summary && open ? 'Hide' : summary ? 'AI Summary' : '✦ Summarise'}
         </button>
-        <a href={deal.link} target="_blank" rel="noopener noreferrer" className="btn-ghost text-[10px] py-1 px-2">
+        <a href={deal.link} target="_blank" rel="noopener noreferrer" className="btn-ghost" style={{ fontSize: 9, padding: '3px 8px' }}>
           Read →
         </a>
       </div>
@@ -102,13 +121,13 @@ function DealCard({ deal }: { deal: DealArticle }) {
 
 function Skeleton() {
   return (
-    <div className="px-4 py-3" style={{ borderBottom: '1px solid var(--border)' }}>
-      <div className="flex gap-2 mb-2">
-        <div className="skeleton h-4 w-16" />
-        <div className="skeleton h-4 w-10" />
+    <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border)' }}>
+      <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+        <div className="skeleton" style={{ height: 16, width: 56, borderRadius: 999 }} />
+        <div className="skeleton" style={{ height: 16, width: 36 }} />
       </div>
-      <div className="skeleton h-3 w-full mb-1" />
-      <div className="skeleton h-3 w-3/4" />
+      <div className="skeleton" style={{ height: 13, width: '100%', marginBottom: 6 }} />
+      <div className="skeleton" style={{ height: 13, width: '75%' }} />
     </div>
   );
 }
@@ -117,26 +136,29 @@ interface Props { deals: DealArticle[]; loading: boolean; }
 
 export default function DealFlow({ deals, loading }: Props) {
   return (
-    <section
-      className="card flex flex-col"
-      style={{ height: '100%', overflow: 'hidden' }}
-    >
+    <section className="card" style={{ height: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
       <header
-        className="flex items-center justify-between px-4 py-3 shrink-0"
-        style={{ borderBottom: '1px solid var(--border)' }}
+        className="section-header shrink-0"
+        style={{ padding: '14px 16px 10px' }}
       >
-        <div className="flex items-center gap-2">
-          <span className="font-display font-bold text-base" style={{ color: 'var(--text)' }}>Deal Flow</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span className="font-display font-bold" style={{ fontSize: 16, color: 'var(--text)', letterSpacing: '-0.01em' }}>
+            Deal Flow
+          </span>
           {!loading && (
             <span
-              className="font-data text-[9px] px-1.5 py-0.5 rounded"
-              style={{ background: 'var(--surface-2)', color: 'var(--text-muted)', border: '1px solid var(--border)' }}
+              className="font-data"
+              style={{
+                fontSize: 9, padding: '1px 6px', borderRadius: 2,
+                background: 'var(--surface-2)', color: 'var(--text-muted)',
+                border: '1px solid var(--border-2)',
+              }}
             >
               {deals.length}
             </span>
           )}
         </div>
-        <span className="section-label">M&A · PE · IPO</span>
+        <span className="section-label">M&amp;A · PE · IPO</span>
       </header>
 
       <div className="col-scroll flex-1">
@@ -144,10 +166,10 @@ export default function DealFlow({ deals, loading }: Props) {
           ? [...Array(6)].map((_, i) => <Skeleton key={i} />)
           : deals.length === 0
           ? (
-            <div className="flex flex-col items-center justify-center py-16 px-6" style={{ color: 'var(--text-muted)' }}>
-              <span className="text-3xl mb-3">📋</span>
-              <p className="text-sm">No deals in the feeds right now</p>
-              <p className="text-xs mt-1">Refreshes every 10 minutes</p>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '64px 24px', color: 'var(--text-muted)' }}>
+              <span style={{ fontSize: 28, marginBottom: 12 }}>📋</span>
+              <p className="font-body" style={{ fontSize: 13 }}>No deals in the feeds right now</p>
+              <p className="font-data" style={{ fontSize: 10, marginTop: 4, letterSpacing: '0.06em' }}>REFRESHES EVERY 10 MIN</p>
             </div>
           )
           : deals.map(deal => <DealCard key={deal.id} deal={deal} />)

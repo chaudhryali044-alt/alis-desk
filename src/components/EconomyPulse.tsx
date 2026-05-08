@@ -240,8 +240,8 @@ function TickerItem({ t, onSelect }: { t: Ticker; onSelect: (t: Ticker) => void 
     >
       {/* Name */}
       <span
-        className="font-data"
-        style={{ fontSize: 10, color: 'var(--text-muted)', letterSpacing: '0.04em', whiteSpace: 'nowrap' }}
+        className="font-data small-caps"
+        style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: '0.10em', whiteSpace: 'nowrap' }}
       >
         {t.name}
       </span>
@@ -249,7 +249,7 @@ function TickerItem({ t, onSelect }: { t: Ticker; onSelect: (t: Ticker) => void 
       {/* Price */}
       <span
         className="font-data font-bold"
-        style={{ fontSize: 13, color: priceColor, whiteSpace: 'nowrap' }}
+        style={{ fontSize: 14, color: priceColor, whiteSpace: 'nowrap' }}
       >
         {priceFmt}
         {t.unit && (
@@ -260,7 +260,7 @@ function TickerItem({ t, onSelect }: { t: Ticker; onSelect: (t: Ticker) => void 
       {/* Arrow + pct */}
       <span
         className="font-data"
-        style={{ fontSize: 11, color: chgColor, whiteSpace: 'nowrap' }}
+        style={{ fontSize: 11.5, color: chgColor, whiteSpace: 'nowrap' }}
       >
         {isUp ? '▲' : isDown ? '▼' : '─'} {pctStr}
       </span>
@@ -340,7 +340,7 @@ export default function EconomyPulse() {
               display: 'inline-block',
             }}
           />
-          <span className="section-label" style={{ fontSize: 9 }}>LIVE</span>
+          <span className="section-label" style={{ fontSize: 8.5, letterSpacing: '0.20em' }}>LIVE</span>
         </div>
 
         {/* Right-side fade-out gradient */}

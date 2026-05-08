@@ -35,7 +35,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem('theme');if(t==='light'){document.documentElement.classList.remove('dark');document.documentElement.classList.add('light');}else{document.documentElement.classList.add('dark');}}catch(e){}})();`,
+            __html: `(function(){try{
+              var t=localStorage.getItem('theme');
+              if(t==='light'){document.documentElement.classList.remove('dark');document.documentElement.classList.add('light');}
+              else{document.documentElement.classList.add('dark');}
+              var a=localStorage.getItem('accent');
+              if(a&&a!=='gold'){document.documentElement.setAttribute('data-accent',a);}
+            }catch(e){}})();`,
           }}
         />
       </head>

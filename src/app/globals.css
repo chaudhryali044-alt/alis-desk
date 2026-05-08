@@ -2,62 +2,102 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ─── Design tokens ───────────────────────────────────────────── */
+/* ─── Accent theme variables ─────────────────────────────────── */
+/* Theme 1 — Gold (default) */
+:root, [data-accent="gold"] {
+  --gold:         #C9A84C;
+  --gold-light:   #E8C96A;
+  --gold-dim:     #4A3A18;
+  --gold-text:    #0A0700;
+}
+/* Theme 2 — FT Salmon */
+[data-accent="salmon"] {
+  --gold:         #990F3D;
+  --gold-light:   #CC1A52;
+  --gold-dim:     #4A0720;
+  --gold-text:    #FFF1E5;
+}
+/* Theme 3 — Midnight Blue */
+[data-accent="midnight"] {
+  --gold:         #4A90D9;
+  --gold-light:   #6AAEE8;
+  --gold-dim:     #162E4A;
+  --gold-text:    #FFFFFF;
+}
+
+/* ─── Dark mode (default) ────────────────────────────────────── */
 :root {
-  --bg:           #080808;
-  --surface:      #0f0f0f;
-  --surface-2:    #141414;
-  --surface-3:    #1a1a1a;
-  --border:       #1e1e1e;
-  --border-2:     #272727;
-  --text:         #e8e4dc;
-  --text-muted:   #5a5a5a;
-  --text-secondary: #888880;
-  --gold:         #c9a84c;
-  --gold-light:   #e8c96a;
-  --gold-dim:     #6b5520;
-  --positive:     #2ecc71;
-  --negative:     #e74c3c;
+  --bg:             #0A0A0A;
+  --surface:        #111111;
+  --surface-2:      #171717;
+  --surface-3:      #1E1E1E;
+  --border:         #1E1E1E;
+  --border-2:       #2A2A2A;
+  --text:           #F0EDE6;
+  --text-muted:     #4A4A4A;
+  --text-secondary: #8C8C8C;
+  --positive:       #2ECC71;
+  --negative:       #E74C3C;
 }
 
+/* ─── Light mode ─────────────────────────────────────────────── */
 .light {
-  --bg:           #f7f3ec;
-  --surface:      #ffffff;
-  --surface-2:    #f2ece0;
-  --surface-3:    #ece5d8;
-  --border:       #ddd5c5;
-  --border-2:     #cfc5b0;
-  --text:         #18180f;
-  --text-muted:   #888070;
-  --text-secondary: #665f50;
-  --gold:         #8a6000;
-  --gold-light:   #b07800;
-  --gold-dim:     #c9a84c;
-  --positive:     #16a34a;
-  --negative:     #dc2626;
+  --bg:             #F7F3EC;
+  --surface:        #FFFFFF;
+  --surface-2:      #F2EDE0;
+  --surface-3:      #EAE4D5;
+  --border:         #DDD5C5;
+  --border-2:       #CEC4AF;
+  --text:           #18180F;
+  --text-muted:     #8C8070;
+  --text-secondary: #665F50;
+  --positive:       #16A34A;
+  --negative:       #DC2626;
+}
+.light [data-accent="gold"],
+.light:root {
+  --gold-dim: #B8902A;
+}
+.light [data-accent="salmon"] {
+  --gold-dim: #800A33;
+}
+.light [data-accent="midnight"] {
+  --gold-dim: #2B6CB0;
 }
 
-/* ─── Base ───────────────────────────────────────────────────── */
+/* ─── Theme-switch smooth transition ─────────────────────────── */
+body,
+.card, .card-2,
+nav, header, footer,
+aside, section, article,
+.btn-gold, .btn-ghost,
+.section-label, .source-badge, .tag {
+  transition:
+    color 0.3s ease,
+    background-color 0.3s ease,
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+/* ─── Base reset ─────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
 html { scroll-behavior: smooth; }
-
 body {
   background: var(--bg);
   color: var(--text);
   font-family: var(--font-sans), 'DM Sans', system-ui, sans-serif;
   font-size: 13px;
-  line-height: 1.6;
+  line-height: 1.65;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar { width: 3px; height: 3px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 2px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
-/* ─── Typography helpers ─────────────────────────────────────── */
+/* ─── Typography ─────────────────────────────────────────────── */
 .font-display {
   font-family: var(--font-display), 'Playfair Display', Georgia, serif;
 }
@@ -68,43 +108,58 @@ body {
   font-family: var(--font-sans), 'DM Sans', system-ui, sans-serif;
 }
 
+.small-caps {
+  font-variant: small-caps;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-size: 0.85em;
+}
+
 /* ─── Surface utilities ──────────────────────────────────────── */
 .card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 4px;
 }
-
 .card-2 {
   background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 4px;
 }
-
 .card-hover {
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
 }
 .card-hover:hover {
   border-color: var(--gold-dim);
   box-shadow: 0 0 0 1px var(--gold-dim);
 }
 
-/* ─── Colour utilities ──────────────────────────────────────── */
-.text-gold  { color: var(--gold); }
-.text-muted { color: var(--text-muted); }
-.text-secondary { color: var(--text-secondary); }
-.pos { color: var(--positive); }
-.neg { color: var(--negative); }
-
 /* ─── Section labels ─────────────────────────────────────────── */
 .section-label {
   font-family: var(--font-mono), monospace;
-  font-size: 9px;
+  font-size: 8.5px;
   font-weight: 700;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--gold);
 }
+
+/* Section header with accent rule — use on header divs */
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 10px;
+  border-bottom: 1.5px solid var(--gold-dim);
+  margin-bottom: 0;
+}
+
+/* ─── Colour utilities ───────────────────────────────────────── */
+.text-gold     { color: var(--gold); }
+.text-muted    { color: var(--text-muted); }
+.text-secondary { color: var(--text-secondary); }
+.pos { color: var(--positive); }
+.neg { color: var(--negative); }
 
 /* ─── Buttons ────────────────────────────────────────────────── */
 .btn-gold {
@@ -112,20 +167,21 @@ body {
   align-items: center;
   gap: 6px;
   background: var(--gold);
-  color: #0a0700;
+  color: var(--gold-text, #0a0700);
   font-family: var(--font-sans), sans-serif;
   font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   padding: 6px 14px;
-  border-radius: 5px;
+  border-radius: 3px;
   border: none;
   cursor: pointer;
-  transition: opacity 0.15s, transform 0.1s;
+  transition: opacity 0.15s, transform 0.1s, background-color 0.3s ease;
   white-space: nowrap;
 }
-.btn-gold:hover:not(:disabled) { opacity: 0.82; transform: translateY(-1px); }
-.btn-gold:disabled { opacity: 0.55; cursor: not-allowed; }
+.btn-gold:hover:not(:disabled) { opacity: 0.85; transform: translateY(-1px); }
+.btn-gold:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .btn-ghost {
   display: inline-flex;
@@ -134,9 +190,12 @@ body {
   background: transparent;
   border: 1px solid var(--border-2);
   color: var(--text-muted);
-  font-size: 11px;
-  padding: 5px 11px;
-  border-radius: 5px;
+  font-family: var(--font-mono), monospace;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 5px 10px;
+  border-radius: 3px;
   cursor: pointer;
   transition: border-color 0.15s, color 0.15s;
   white-space: nowrap;
@@ -144,20 +203,20 @@ body {
 .btn-ghost:hover { border-color: var(--gold-dim); color: var(--gold); }
 
 /* ─── Impact badges ──────────────────────────────────────────── */
-.impact-high   { color: #e74c3c; font-family: var(--font-mono), monospace; font-size: 9px; font-weight: 700; letter-spacing: 0.08em; }
-.impact-medium { color: var(--gold); font-family: var(--font-mono), monospace; font-size: 9px; font-weight: 700; letter-spacing: 0.08em; }
-.impact-low    { color: var(--text-muted); font-family: var(--font-mono), monospace; font-size: 9px; letter-spacing: 0.08em; }
+.impact-high   { color: #E74C3C; font-family: var(--font-mono), monospace; font-size: 8px; font-weight: 700; letter-spacing: 0.1em; }
+.impact-medium { color: var(--gold); font-family: var(--font-mono), monospace; font-size: 8px; font-weight: 700; letter-spacing: 0.1em; }
+.impact-low    { color: var(--text-muted); font-family: var(--font-mono), monospace; font-size: 8px; letter-spacing: 0.1em; }
 
 /* ─── Source badges ──────────────────────────────────────────── */
 .source-badge {
   display: inline-block;
   font-family: var(--font-mono), monospace;
-  font-size: 9px;
+  font-size: 8.5px;
   font-weight: 700;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  padding: 2px 6px;
-  border-radius: 3px;
+  padding: 2px 7px;
+  border-radius: 999px;
   white-space: nowrap;
 }
 
@@ -165,22 +224,22 @@ body {
 .tag {
   display: inline-block;
   font-family: var(--font-mono), monospace;
-  font-size: 9px;
+  font-size: 8.5px;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.10em;
   text-transform: uppercase;
   padding: 2px 7px;
   border-radius: 3px;
   border: 1px solid;
 }
-.tag-markets    { color: #3b9eff; border-color: #1a3a5c; background: rgba(59,158,255,0.07); }
-.tag-macro      { color: var(--gold); border-color: var(--gold-dim); background: rgba(201,168,76,0.07); }
-.tag-earnings   { color: var(--positive); border-color: #1a4a2e; background: rgba(46,204,113,0.07); }
-.tag-geopolitical { color: #e67e22; border-color: #4a2a0a; background: rgba(230,126,34,0.07); }
-.tag-deals      { color: #9b59b6; border-color: #3a1a5c; background: rgba(155,89,182,0.07); }
+.tag-markets    { color: #3B9EFF; border-color: rgba(59,158,255,0.25); background: rgba(59,158,255,0.06); }
+.tag-macro      { color: var(--gold); border-color: var(--gold-dim); background: rgba(201,168,76,0.06); }
+.tag-earnings   { color: var(--positive); border-color: rgba(46,204,113,0.25); background: rgba(46,204,113,0.06); }
+.tag-geopolitical { color: #E67E22; border-color: rgba(230,126,34,0.25); background: rgba(230,126,34,0.06); }
+.tag-deals      { color: #9B59B6; border-color: rgba(155,89,182,0.25); background: rgba(155,89,182,0.06); }
 
 /* ─── Dividers ───────────────────────────────────────────────── */
-.divider { border: none; border-top: 1px solid var(--border); }
+.divider   { border: none; border-top: 1px solid var(--border); }
 .divider-2 { border: none; border-top: 1px solid var(--border-2); }
 .gold-rule { border: none; border-top: 1px solid var(--gold-dim); }
 
@@ -189,43 +248,44 @@ body {
   from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+@keyframes sectionIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
 @keyframes pulse {
   0%, 100% { opacity: 1; }
-  50%       { opacity: 0.35; }
+  50%       { opacity: 0.3; }
 }
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
 
-.animate-fade-up { animation: fadeUp 0.25s ease-out; }
-.animate-pulse-dot { animation: pulse 2s ease-in-out infinite; }
+.animate-fade-up    { animation: fadeUp 0.25s ease-out both; }
+.animate-pulse-dot  { animation: pulse 2s ease-in-out infinite; }
+
+.animate-section    {
+  animation: sectionIn 0.45s ease-out both;
+}
+.animate-section-1  { animation-delay: 0s; }
+.animate-section-2  { animation-delay: 0.08s; }
+.animate-section-3  { animation-delay: 0.16s; }
+.animate-section-4  { animation-delay: 0.24s; }
 
 /* ─── Skeletons ──────────────────────────────────────────────── */
 @keyframes shimmer {
   from { background-position: -200% 0; }
-  to   { background-position: 200% 0; }
+  to   { background-position:  200% 0; }
 }
 .skeleton {
-  background: linear-gradient(
-    90deg,
-    #222222 25%,
-    #2e2e2e 50%,
-    #222222 75%
-  );
+  background: linear-gradient(90deg, #1A1A1A 25%, #242424 50%, #1A1A1A 75%);
   background-size: 200% 100%;
   animation: shimmer 1.6s infinite;
-  border-radius: 3px;
+  border-radius: 2px;
 }
 .light .skeleton {
-  background: linear-gradient(
-    90deg,
-    #ddd5c5 25%,
-    #cfc5b0 50%,
-    #ddd5c5 75%
-  );
+  background: linear-gradient(90deg, #DDD5C5 25%, #CFC5B0 50%, #DDD5C5 75%);
   background-size: 200% 100%;
   animation: shimmer 1.6s infinite;
-  border-radius: 3px;
 }
 
 /* ─── Scrollable column ──────────────────────────────────────── */
@@ -245,4 +305,30 @@ body {
 .num {
   font-family: var(--font-mono), 'Space Mono', monospace;
   font-variant-numeric: tabular-nums;
+}
+
+/* ─── Editorial prose ────────────────────────────────────────── */
+.editorial-prose {
+  font-family: var(--font-sans), 'DM Sans', system-ui, sans-serif;
+  font-size: 13.5px;
+  line-height: 1.85;
+  color: var(--text-secondary);
+}
+.editorial-heading {
+  font-family: var(--font-mono), monospace;
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 8px;
+}
+
+/* ─── Footer ─────────────────────────────────────────────────── */
+.site-footer {
+  border-top: 1.5px solid var(--gold-dim);
+  padding: 28px 24px;
+  text-align: center;
+  background: var(--surface);
+  margin-top: 0;
 }

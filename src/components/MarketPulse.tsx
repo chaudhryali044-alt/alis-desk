@@ -8,19 +8,10 @@ type Session = 'morning' | 'evening';
 function ParagraphBlock({ heading, content }: { heading: string; content: string }) {
   return (
     <div style={{ marginBottom: 20 }}>
-      <div
-        className="font-data font-bold text-[10px] uppercase tracking-widest mb-2"
-        style={{ color: 'var(--gold)' }}
-      >
+      <div className="editorial-heading">
         {heading}
       </div>
-      <p
-        style={{
-          fontSize: 13, lineHeight: 1.75,
-          color: 'var(--text-secondary)',
-          fontFamily: 'var(--font-sans), "DM Sans", system-ui, sans-serif',
-        }}
-      >
+      <p className="editorial-prose">
         {content}
       </p>
     </div>
@@ -113,7 +104,7 @@ export default function MarketPulse() {
         style={{
           background:   'var(--surface)',
           border:       '1px solid var(--gold-dim)',
-          borderRadius: 8,
+          borderRadius: 4,
           padding:      '24px 28px',
           boxShadow:    '0 0 0 1px rgba(201,168,76,0.08)',
         }}
@@ -121,7 +112,7 @@ export default function MarketPulse() {
         {/* ── Header row ── */}
         <div className="flex items-center justify-between flex-wrap gap-3 mb-5">
           <div className="flex items-center gap-3">
-            <span className="section-label" style={{ fontSize: 10 }}>Today&apos;s Market Pulse</span>
+            <span className="section-label" style={{ fontSize: 10, letterSpacing: '0.18em' }}>Today&apos;s Market Pulse</span>
             {activeData?.generatedAt && (
               <span
                 className="font-data text-[9px]"
@@ -174,7 +165,7 @@ export default function MarketPulse() {
         {activeData && !isLoading && (
           <div
             className="font-display font-bold mb-5"
-            style={{ fontSize: 18, color: 'var(--text)', lineHeight: 1.3 }}
+            style={{ fontSize: 22, color: 'var(--text)', lineHeight: 1.3 }}
           >
             {activeTab === 'morning' ? '🌅' : '🌙'} {activeData.title}
           </div>

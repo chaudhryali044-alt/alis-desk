@@ -3,25 +3,19 @@
 import { useState } from 'react';
 import type { MacroEvent, MarketVoice } from '@/lib/types';
 
-/* ─────────────────────────────────────────────────────────────────
-   Widget 1 — Macro Calendar
-───────────────────────────────────────────────────────────────── */
 interface EnrichedEvent extends MacroEvent {
   sourceLink?: string;
   analysis?: string;
 }
 
 function ImpactDot({ impact }: { impact: 'High' | 'Medium' | 'Low' }) {
-  const map = { High: '#e74c3c', Medium: '#f39c12', Low: '#2ecc71' };
+  const map = { High: '#E74C3C', Medium: '#E67E22', Low: '#2ECC71' };
   return (
     <span
       style={{
-        display: 'inline-block',
-        width: 8, height: 8,
-        borderRadius: '50%',
-        background: map[impact],
-        flexShrink: 0,
-        marginTop: 4,
+        display: 'inline-block', width: 7, height: 7,
+        borderRadius: '50%', background: map[impact],
+        flexShrink: 0, marginTop: 5,
       }}
       title={impact}
     />
@@ -30,58 +24,55 @@ function ImpactDot({ impact }: { impact: 'High' | 'Medium' | 'Low' }) {
 
 function MacroCalendar({ events, loading }: { events: EnrichedEvent[]; loading: boolean }) {
   return (
-    <div className="card p-4" style={{ borderBottom: '1px solid var(--border)' }}>
-      <div className="flex items-center justify-between mb-3">
-        <span className="font-display font-bold text-sm" style={{ color: 'var(--text)' }}>
+    <div className="card" style={{ padding: '14px 16px' }}>
+      <div className="section-header" style={{ marginBottom: 12 }}>
+        <span className="font-display font-bold" style={{ fontSize: 15, color: 'var(--text)', letterSpacing: '-0.01em' }}>
           Macro Calendar
         </span>
         <span className="section-label">This Week</span>
       </div>
 
       {loading ? (
-        <div className="space-y-2">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="flex gap-2 items-center">
-              <div className="skeleton h-3 w-6" />
-              <div className="skeleton h-3 flex-1" />
-              <div className="skeleton h-3 w-8" />
+            <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              <div className="skeleton" style={{ height: 10, width: 24 }} />
+              <div className="skeleton" style={{ height: 10, flex: 1 }} />
+              <div className="skeleton" style={{ height: 10, width: 32 }} />
             </div>
           ))}
         </div>
       ) : events.length === 0 ? (
-        <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>No major events this week.</p>
+        <p className="font-data" style={{ fontSize: 10, color: 'var(--text-muted)', letterSpacing: '0.06em' }}>No major events this week.</p>
       ) : (
-        <div className="space-y-0">
+        <div>
           {events.map((ev, i) => (
-            <div key={i} className="py-2" style={{ borderBottom: '1px solid var(--border)' }}>
-              <div className="flex items-start gap-2">
+            <div key={i} style={{ padding: '9px 0', borderBottom: '1px solid var(--border)' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
                 <ImpactDot impact={ev.impact} />
-                <span className="text-base leading-none shrink-0">{ev.flagEmoji}</span>
-                <div className="flex-1 min-w-0">
+                <span style={{ fontSize: 14, lineHeight: 1, flexShrink: 0 }}>{ev.flagEmoji}</span>
+                <div style={{ flex: 1, minWidth: 0 }}>
                   {ev.sourceLink ? (
                     <a
                       href={ev.sourceLink}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-[12px] font-medium leading-tight block transition-colors"
-                      style={{ color: 'var(--text)' }}
+                      style={{ fontSize: 12, fontWeight: 500, lineHeight: 1.35, display: 'block', color: 'var(--text)', textDecoration: 'none', transition: 'color 0.15s' }}
                       onMouseEnter={e => (e.currentTarget.style.color = 'var(--gold)')}
                       onMouseLeave={e => (e.currentTarget.style.color = 'var(--text)')}
                     >
                       {ev.event}
                     </a>
                   ) : (
-                    <p className="text-[12px] font-medium leading-tight" style={{ color: 'var(--text)' }}>
-                      {ev.event}
-                    </p>
+                    <p style={{ fontSize: 12, fontWeight: 500, lineHeight: 1.35, color: 'var(--text)' }}>{ev.event}</p>
                   )}
-                  <p className="font-data text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                  <p className="font-data" style={{ fontSize: 9, marginTop: 3, color: 'var(--text-muted)', letterSpacing: '0.05em' }}>
                     {ev.date}{ev.time && ` · ${ev.time}`}
                     {ev.estimate && ` · Est: ${ev.estimate}`}
                     {ev.actual && <span style={{ color: 'var(--gold)' }}> · Act: {ev.actual}</span>}
                   </p>
                   {ev.analysis && (
-                    <p className="text-[11px] mt-1 leading-snug" style={{ color: 'var(--text-secondary)' }}>
+                    <p style={{ fontSize: 11, marginTop: 4, lineHeight: 1.5, color: 'var(--text-secondary)' }}>
                       {ev.analysis}
                     </p>
                   )}
@@ -95,9 +86,6 @@ function MacroCalendar({ events, loading }: { events: EnrichedEvent[]; loading: 
   );
 }
 
-/* ─────────────────────────────────────────────────────────────────
-   Widget 2 — Market Voices
-───────────────────────────────────────────────────────────────── */
 function timeAgo(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
   const m = Math.floor(diff / 60000);
@@ -110,7 +98,7 @@ function timeAgo(dateStr: string): string {
 
 function VoiceCard({ voice }: { voice: MarketVoice }) {
   const [aiAnalysis, setAiAnalysis] = useState<string | null>(null);
-  const [aiLoading, setAiLoading]   = useState(false);
+  const [aiLoading,  setAiLoading]  = useState(false);
 
   const handleAnalyse = async () => {
     if (aiAnalysis || aiLoading) return;
@@ -131,13 +119,22 @@ function VoiceCard({ voice }: { voice: MarketVoice }) {
   };
 
   return (
-    <div className="py-2.5" style={{ borderBottom: '1px solid var(--border)' }}>
-      <div className="flex items-center gap-1.5 mb-1 flex-wrap">
-        <span className="font-data text-[10px] font-bold" style={{ color: 'var(--gold)' }}>
+    <div style={{ padding: '12px 0', borderBottom: '1px solid var(--border)' }}>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 4, flexWrap: 'wrap' }}>
+        <span
+          className="font-display font-bold"
+          style={{ fontSize: 13, color: 'var(--text)', letterSpacing: '-0.01em' }}
+        >
           {voice.author}
         </span>
-        <span className="font-data text-[9px]" style={{ color: 'var(--text-muted)' }}>
-          · {voice.platform} · {timeAgo(voice.pubDate)}
+        <span
+          className="section-label"
+          style={{ fontSize: 7.5, color: 'var(--text-muted)', letterSpacing: '0.14em' }}
+        >
+          {voice.platform}
+        </span>
+        <span className="font-data" style={{ fontSize: 9, color: 'var(--text-muted)' }}>
+          {timeAgo(voice.pubDate)}
         </span>
       </div>
 
@@ -145,8 +142,7 @@ function VoiceCard({ voice }: { voice: MarketVoice }) {
         href={voice.link}
         target="_blank"
         rel="noopener noreferrer"
-        className="text-[12px] font-medium leading-snug block mb-1.5 transition-colors"
-        style={{ color: 'var(--text)' }}
+        style={{ fontSize: 12.5, fontWeight: 500, lineHeight: 1.4, display: 'block', marginBottom: 5, color: 'var(--text)', textDecoration: 'none', transition: 'color 0.15s' }}
         onMouseEnter={e => (e.currentTarget.style.color = 'var(--gold)')}
         onMouseLeave={e => (e.currentTarget.style.color = 'var(--text)')}
       >
@@ -154,19 +150,23 @@ function VoiceCard({ voice }: { voice: MarketVoice }) {
       </a>
 
       {voice.excerpt && (
-        <p className="text-[11px] leading-snug mb-1.5" style={{ color: 'var(--text-secondary)' }}>
+        <p style={{ fontSize: 11, lineHeight: 1.55, marginBottom: 6, color: 'var(--text-secondary)' }}>
           {voice.excerpt}
         </p>
       )}
 
       {aiAnalysis && (
         <div
-          className="text-[11px] leading-relaxed px-2.5 py-1.5 rounded mb-1.5"
-          style={{ background: 'var(--surface-2)', borderLeft: '2px solid var(--gold)', color: 'var(--text-secondary)' }}
+          style={{
+            fontSize: 11, lineHeight: 1.6,
+            padding: '8px 10px', borderRadius: 3,
+            background: 'var(--surface-2)',
+            borderLeft: '2px solid var(--gold)',
+            color: 'var(--text-secondary)',
+            marginBottom: 6,
+          }}
         >
-          <span className="font-data text-[9px] uppercase tracking-widest block mb-0.5" style={{ color: 'var(--gold)' }}>
-            Market Impact
-          </span>
+          <span className="editorial-heading" style={{ display: 'block', marginBottom: 3 }}>Market Impact</span>
           {aiAnalysis}
         </div>
       )}
@@ -175,10 +175,15 @@ function VoiceCard({ voice }: { voice: MarketVoice }) {
         <button
           onClick={handleAnalyse}
           disabled={aiLoading}
-          className="font-data text-[10px] transition-colors"
-          style={{ color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-          onMouseEnter={e => !aiLoading && (e.currentTarget.style.color = 'var(--gold)')}
-          onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}
+          className="font-data"
+          style={{
+            fontSize: 9, letterSpacing: '0.08em', textTransform: 'uppercase',
+            color: 'var(--text-muted)', background: 'none',
+            border: 'none', cursor: 'pointer', padding: 0,
+            transition: 'color 0.15s',
+          }}
+          onMouseEnter={e => !aiLoading && ((e.currentTarget as HTMLElement).style.color = 'var(--gold)')}
+          onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = 'var(--text-muted)')}
         >
           {aiLoading ? '⏳ Analysing…' : '✦ Why it matters'}
         </button>
@@ -189,50 +194,43 @@ function VoiceCard({ voice }: { voice: MarketVoice }) {
 
 function MarketVoices({ voices, loading }: { voices: MarketVoice[]; loading: boolean }) {
   return (
-    <div className="card p-4">
-      <div className="flex items-center justify-between mb-3">
-        <span className="font-display font-bold text-sm" style={{ color: 'var(--text)' }}>
+    <div className="card" style={{ padding: '14px 16px' }}>
+      <div className="section-header" style={{ marginBottom: 12 }}>
+        <span className="font-display font-bold" style={{ fontSize: 15, color: 'var(--text)', letterSpacing: '-0.01em' }}>
           Market Voices
         </span>
         <span className="section-label">Thought Leaders</span>
       </div>
 
       {loading ? (
-        <div className="space-y-3">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="space-y-1.5">
-              <div className="skeleton h-3 w-28" />
-              <div className="skeleton h-3.5 w-full" />
-              <div className="skeleton h-3 w-3/4" />
+            <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+              <div className="skeleton" style={{ height: 12, width: 110 }} />
+              <div className="skeleton" style={{ height: 12, width: '100%' }} />
+              <div className="skeleton" style={{ height: 11, width: '75%' }} />
             </div>
           ))}
         </div>
       ) : voices.length === 0 ? (
-        <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>
+        <p className="font-data" style={{ fontSize: 10, color: 'var(--text-muted)', letterSpacing: '0.06em' }}>
           No posts available — RSS feeds may be temporarily unavailable.
         </p>
       ) : (
-        <div>
-          {voices.map(v => <VoiceCard key={v.id} voice={v} />)}
-        </div>
+        <div>{voices.map(v => <VoiceCard key={v.id} voice={v} />)}</div>
       )}
     </div>
   );
 }
 
-/* ─────────────────────────────────────────────────────────────────
-   Composite export
-───────────────────────────────────────────────────────────────── */
 interface Props {
-  events:        EnrichedEvent[];
-  eventsLoading: boolean;
-  voices:        MarketVoice[];
-  voicesLoading: boolean;
+  events: EnrichedEvent[]; eventsLoading: boolean;
+  voices: MarketVoice[];   voicesLoading: boolean;
 }
 
 export default function IntelligencePanel({ events, eventsLoading, voices, voicesLoading }: Props) {
   return (
-    <aside className="flex flex-col gap-4" style={{ height: '100%' }}>
+    <aside style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <MacroCalendar events={events} loading={eventsLoading} />
       <MarketVoices  voices={voices} loading={voicesLoading} />
     </aside>
