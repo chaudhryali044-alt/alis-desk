@@ -235,6 +235,12 @@ body {
   scrollbar-color: var(--border-2) transparent;
 }
 
+/* ─── Ticker strip ───────────────────────────────────────────── */
+@keyframes ticker-scroll {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
 /* ─── Number display ─────────────────────────────────────────── */
 .num {
   font-family: var(--font-mono), 'Space Mono', monospace;

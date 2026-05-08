@@ -6,48 +6,41 @@ import EconomyPulse from '@/components/EconomyPulse';
 import DealFlow from '@/components/DealFlow';
 import TopStories from '@/components/TopStories';
 import IntelligencePanel from '@/components/IntelligencePanel';
-import MarketSnapshot from '@/components/MarketSnapshot';
 import DailyBriefing from '@/components/DailyBriefing';
 import ChatBox from '@/components/ChatBox';
 import type {
-  DealArticle, TopStory,
-  MacroEvent, MarketVoice, SnapshotQuote,
-  NewsArticle,
+  DealArticle, TopStory, MacroEvent, MarketVoice, NewsArticle,
 } from '@/lib/types';
 
 interface EnrichedEvent extends MacroEvent {
   sourceLink?: string;
-  analysis?: string;
+  analysis?:   string;
 }
 
 export default function Home() {
   /* ── Deal Flow ────────────────────────────────────── */
-  const [deals, setDeals]               = useState<DealArticle[]>([]);
+  const [deals,        setDeals]        = useState<DealArticle[]>([]);
   const [dealsLoading, setDealsLoading] = useState(true);
 
   /* ── Top Stories ──────────────────────────────────── */
-  const [stories, setStories]           = useState<TopStory[]>([]);
-  const [storiesLoading, setStoriesLoading] = useState(true);
+  const [stories,          setStories]          = useState<TopStory[]>([]);
+  const [storiesLoading,   setStoriesLoading]   = useState(true);
 
   /* ── Macro Calendar ───────────────────────────────── */
-  const [events, setEvents]             = useState<EnrichedEvent[]>([]);
+  const [events,        setEvents]        = useState<EnrichedEvent[]>([]);
   const [eventsLoading, setEventsLoading] = useState(true);
 
   /* ── Market Voices ────────────────────────────────── */
-  const [voices, setVoices]             = useState<MarketVoice[]>([]);
+  const [voices,        setVoices]        = useState<MarketVoice[]>([]);
   const [voicesLoading, setVoicesLoading] = useState(true);
 
-  /* ── Market Snapshot ──────────────────────────────── */
-  const [snapQuotes, setSnapQuotes]     = useState<SnapshotQuote[]>([]);
-  const [snapLoading, setSnapLoading]   = useState(true);
-
   /* ── Daily Briefing modal ─────────────────────────── */
-  const [briefing, setBriefing]         = useState<string | null>(null);
+  const [briefing,        setBriefing]        = useState<string | null>(null);
   const [briefingLoading, setBriefingLoading] = useState(false);
-  const [showBriefing, setShowBriefing] = useState(false);
+  const [showBriefing,    setShowBriefing]    = useState(false);
 
   /* ── Chat context ─────────────────────────────────── */
-  const [allArticles, setAllArticles]   = useState<NewsArticle[]>([]);
+  const [allArticles, setAllArticles] = useState<NewsArticle[]>([]);
 
   /* ── Fetchers ─────────────────────────────────────── */
   const fetchDeals = useCallback(async () => {
@@ -82,14 +75,6 @@ export default function Home() {
     } catch { /* silent */ } finally { setVoicesLoading(false); }
   }, []);
 
-  const fetchSnapshot = useCallback(async () => {
-    try {
-      const r = await fetch('/api/snapshot');
-      const d = await r.json();
-      setSnapQuotes(d.quotes ?? []);
-    } catch { /* silent */ } finally { setSnapLoading(false); }
-  }, []);
-
   const fetchAllNews = useCallback(async () => {
     try {
       const r = await fetch('/api/news');
@@ -101,20 +86,19 @@ export default function Home() {
   useEffect(() => {
     Promise.all([
       fetchDeals(), fetchStories(), fetchCalendar(),
-      fetchVoices(), fetchSnapshot(), fetchAllNews(),
+      fetchVoices(), fetchAllNews(),
     ]);
 
     const t1 = setInterval(fetchDeals,    10 * 60 * 1000);
     const t2 = setInterval(fetchStories,  30 * 60 * 1000);
-    const t3 = setInterval(fetchSnapshot,       60 * 1000);
-    const t4 = setInterval(fetchVoices,   30 * 60 * 1000);
-    const t5 = setInterval(fetchAllNews,   5 * 60 * 1000);
+    const t3 = setInterval(fetchVoices,   30 * 60 * 1000);
+    const t4 = setInterval(fetchAllNews,   5 * 60 * 1000);
 
     return () => {
-      clearInterval(t1); clearInterval(t2); clearInterval(t3);
-      clearInterval(t4); clearInterval(t5);
+      clearInterval(t1); clearInterval(t2);
+      clearInterval(t3); clearInterval(t4);
     };
-  }, [fetchDeals, fetchStories, fetchCalendar, fetchVoices, fetchSnapshot, fetchAllNews]);
+  }, [fetchDeals, fetchStories, fetchCalendar, fetchVoices, fetchAllNews]);
 
   /* ── Daily Briefing handler ───────────────────────── */
   const handleBriefing = async () => {
@@ -123,9 +107,9 @@ export default function Home() {
     setBriefing(null);
     try {
       const r = await fetch('/api/briefing', {
-        method: 'POST',
+        method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ articles: allArticles, marketData: null }),
+        body:    JSON.stringify({ articles: allArticles, marketData: null }),
       });
       const d = await r.json();
       setBriefing(d.briefing ?? 'Unable to generate briefing.');
@@ -152,7 +136,7 @@ export default function Home() {
         onWhatsApp={handleWhatsApp}
       />
 
-      {/* ── Economy Pulse (self-fetching, auto-refreshes every 60s) */}
+      {/* ── Live ticker bar (self-fetching, auto-refreshes every 60s) */}
       <EconomyPulse />
 
       {/* ── Three-column body ───────────────────────── */}
@@ -160,19 +144,19 @@ export default function Home() {
         className="flex-1 grid px-4 py-4 gap-4"
         style={{
           gridTemplateColumns: '1fr 1.3fr 1fr',
-          alignItems: 'start',
-          maxWidth: 1600,
-          margin: '0 auto',
-          width: '100%',
+          alignItems:          'start',
+          maxWidth:            1600,
+          margin:              '0 auto',
+          width:               '100%',
         }}
       >
         {/* Left — Deal Flow */}
-        <div style={{ height: 'calc(100vh - 240px)', minHeight: 600 }}>
+        <div style={{ height: 'calc(100vh - 116px)', minHeight: 600 }}>
           <DealFlow deals={deals} loading={dealsLoading} />
         </div>
 
-        {/* Centre — Top Stories */}
-        <div style={{ height: 'calc(100vh - 240px)', minHeight: 600 }}>
+        {/* Centre — Today's Briefing */}
+        <div style={{ height: 'calc(100vh - 116px)', minHeight: 600 }}>
           <TopStories stories={stories} loading={storiesLoading} />
         </div>
 
@@ -186,9 +170,6 @@ export default function Home() {
           />
         </div>
       </div>
-
-      {/* ── Market Snapshot ─────────────────────────── */}
-      <MarketSnapshot quotes={snapQuotes} loading={snapLoading} />
 
       {/* ── Modals / Overlays ───────────────────────── */}
       {showBriefing && (
