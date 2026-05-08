@@ -8,6 +8,8 @@ import TopStories from '@/components/TopStories';
 import IntelligencePanel from '@/components/IntelligencePanel';
 import DailyBriefing from '@/components/DailyBriefing';
 import ChatBox from '@/components/ChatBox';
+import MarketMovers from '@/components/MarketMovers';
+import EarningsCalendar from '@/components/EarningsCalendar';
 import type {
   DealArticle, TopStory, MacroEvent, MarketVoice, NewsArticle,
 } from '@/lib/types';
@@ -169,6 +171,20 @@ export default function Home() {
             voicesLoading={voicesLoading}
           />
         </div>
+      </div>
+
+      {/* ── Bottom row — Market Movers + Earnings ───── */}
+      <div
+        className="grid px-4 pb-6 gap-4"
+        style={{
+          gridTemplateColumns: '1fr 1fr',
+          maxWidth:            1600,
+          margin:              '0 auto',
+          width:               '100%',
+        }}
+      >
+        <MarketMovers />
+        <EarningsCalendar />
       </div>
 
       {/* ── Modals / Overlays ───────────────────────── */}

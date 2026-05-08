@@ -103,6 +103,29 @@ export interface MacroEvent {
   previous?: string;
 }
 
+/* ─── Market Movers ──────────────────────────────────────────── */
+export interface Mover {
+  symbol:    string;
+  name:      string;
+  price:     number;
+  changePct: number;
+  sector:    string;
+  reason:    string;
+}
+
+/* ─── Earnings Calendar ──────────────────────────────────────── */
+export interface EarningsItem {
+  symbol:        string;
+  name:          string;
+  marketCap:     number;
+  reportDate:    string;
+  reportDateFmt: string;
+  epsEstimate:   number | null;
+  epsActual:     number | null;
+  epsBeat:       'beat' | 'miss' | 'inline' | null;
+  status:        'upcoming' | 'reported';
+}
+
 /* ─── IPO Calendar ───────────────────────────────────────────── */
 export interface IPOItem {
   symbol: string;

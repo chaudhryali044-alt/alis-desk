@@ -275,20 +275,32 @@ export default function EconomyPulse() {
   const [selected, setSelected] = useState<Ticker | null>(null);
   const [paused,   setPaused]   = useState(false);
 
-  const fetchTickers = useCallback(async () => {
+  const fetchTickers = useCallback(async (isRetry = false) => {
     try {
-      const r = await fetch('/api/ticker');
+      const r = await fetch('/api/market-data');
       if (!r.ok) throw new Error('non-ok');
       const d = await r.json();
-      setTickers(d.tickers ?? []);
-    } catch { /* keep existing data on refresh failures */ } finally {
-      setLoading(false);
+      const fetched: Ticker[] = d.tickers ?? [];
+      if (fetched.length > 0) {
+        setTickers(fetched);
+        setLoading(false);
+      } else if (!isRetry) {
+        setTimeout(() => fetchTickers(true), 10_000);
+      } else {
+        setLoading(false);
+      }
+    } catch {
+      if (!isRetry) {
+        setTimeout(() => fetchTickers(true), 10_000);
+      } else {
+        setLoading(false);
+      }
     }
   }, []);
 
   useEffect(() => {
     fetchTickers();
-    const t = setInterval(fetchTickers, 60_000);
+    const t = setInterval(() => fetchTickers(), 60_000);
     return () => clearInterval(t);
   }, [fetchTickers]);
 
