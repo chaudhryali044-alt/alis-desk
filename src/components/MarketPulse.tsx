@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
+import { SunHorizon, Moon } from '@phosphor-icons/react';
 import type { PulseVersion } from '@/app/api/market-pulse/route';
 
 type Session = 'morning' | 'evening';
@@ -20,7 +21,7 @@ function ParagraphBlock({ heading, content }: { heading: string; content: string
 
 function TabButton({
   label, active, onClick,
-}: { label: string; active: boolean; onClick: () => void }) {
+}: { label: React.ReactNode; active: boolean; onClick: () => void }) {
   return (
     <button
       onClick={onClick}
@@ -126,12 +127,12 @@ export default function MarketPulse() {
           <div className="flex items-center gap-2">
             {/* Tabs */}
             <TabButton
-              label="🌅 Morning"
+              label={<><SunHorizon size={12} weight="bold" /> Morning</>}
               active={activeTab === 'morning'}
               onClick={() => setActiveTab('morning')}
             />
             <TabButton
-              label="🌙 Evening"
+              label={<><Moon size={12} weight="bold" /> Evening</>}
               active={activeTab === 'evening'}
               onClick={() => setActiveTab('evening')}
             />
@@ -165,9 +166,9 @@ export default function MarketPulse() {
         {activeData && !isLoading && (
           <div
             className="font-display font-bold mb-5"
-            style={{ fontSize: 22, color: 'var(--text)', lineHeight: 1.3 }}
+            style={{ fontSize: 22, color: 'var(--text)', lineHeight: 1.3, display: 'flex', alignItems: 'center', gap: 8 }}
           >
-            {activeTab === 'morning' ? '🌅' : '🌙'} {activeData.title}
+            {activeTab === 'morning' ? <SunHorizon size={20} weight="bold" style={{ color: 'var(--gold)', flexShrink: 0 }} /> : <Moon size={20} weight="bold" style={{ color: 'var(--gold)', flexShrink: 0 }} />} {activeData.title}
           </div>
         )}
 

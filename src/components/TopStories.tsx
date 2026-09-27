@@ -1,7 +1,23 @@
 'use client';
 
 import { useState } from 'react';
+import { MagnifyingGlass } from '@phosphor-icons/react';
 import type { TopStory, RelevanceTag } from '@/lib/types';
+
+function readingTime(text: string): string {
+  const words = text.trim().split(/\s+/).length;
+  const mins = Math.max(1, Math.round(words / 200));
+  return `${mins} min read`;
+}
+
+function sentimentScore(title: string, summary: string): number {
+  const text = (title + ' ' + summary).toLowerCase();
+  const pos = (text.match(/\b(surge|rally|gain|rise|soar|beat|exceed|record|strong|growth|profit|bull|optimis|positiv|up|high|boost|outperform)\b/g) || []).length;
+  const neg = (text.match(/\b(fall|drop|decline|slump|miss|below|weak|loss|bear|pessimis|negativ|down|low|cut|underperform|crisis|crash|concern|risk|warn)\b/g) || []).length;
+  const total = pos + neg;
+  if (total === 0) return 0;
+  return Math.max(-1, Math.min(1, (pos - neg) / total));
+}
 
 const SOURCE_COLORS: Record<string, { bg: string; text: string }> = {
   Reuters:         { bg: '#cc5200',  text: '#fff'    },
@@ -39,6 +55,9 @@ function StoryCard({ story, rank }: { story: TopStory; rank: number }) {
   const [aiSummary, setAiSummary] = useState<string | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
 
+  const rtLabel = readingTime(story.summary);
+  const score   = sentimentScore(story.title, story.summary);
+
   const handleSummarise = async () => {
     if (aiSummary || aiLoading) return;
     setAiLoading(true);
@@ -69,9 +88,13 @@ function StoryCard({ story, rank }: { story: TopStory; rank: number }) {
         className="font-display font-bold shrink-0"
         style={{
           fontSize: 32, lineHeight: 1, marginTop: 2,
-          color: 'var(--gold)',
-          width: 28, textAlign: 'right',
-          opacity: 0.85,
+          backgroundImage: 'linear-gradient(to bottom, var(--gold) 0%, transparent 140%)',
+          backgroundClip: 'text',
+          WebkitBackgroundClip: 'text',
+          color: 'transparent',
+          WebkitTextFillColor: 'transparent',
+          width: 28, textAlign: 'right' as const,
+          opacity: 0.9,
         }}
       >
         {rank}
@@ -84,6 +107,9 @@ function StoryCard({ story, rank }: { story: TopStory; rank: number }) {
           </span>
           <span className="font-data" style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: '0.06em' }}>
             {timeAgo(story.pubDate)}
+          </span>
+          <span className="font-data" style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: '0.06em' }}>
+            {rtLabel}
           </span>
           <TagBadge tag={story.tag} />
         </div>
@@ -108,6 +134,27 @@ function StoryCard({ story, rank }: { story: TopStory; rank: number }) {
         <p className="editorial-prose" style={{ fontSize: 12.5, marginBottom: 8 }}>
           {story.summary}
         </p>
+
+        {/* Sentiment bar */}
+        <div style={{ marginBottom: 8, marginTop: -4 }}>
+          <div style={{
+            width: '100%', height: 2, background: 'var(--border)',
+            borderRadius: 1, overflow: 'hidden',
+          }}>
+            <div style={{
+              height: '100%',
+              width: `${Math.abs(score) * 100}%`,
+              background: score > 0.1 ? 'var(--positive)' : score < -0.1 ? 'var(--negative)' : 'var(--text-muted)',
+              marginLeft: score >= 0 ? '50%' : `${50 - Math.abs(score) * 50}%`,
+              borderRadius: 1,
+              transition: 'width 0.4s ease',
+            }} />
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 2 }}>
+            <span className="font-data" style={{ fontSize: 7.5, color: 'var(--negative)', letterSpacing: '0.08em' }}>BEARISH</span>
+            <span className="font-data" style={{ fontSize: 7.5, color: 'var(--positive)', letterSpacing: '0.08em' }}>BULLISH</span>
+          </div>
+        </div>
 
         {aiSummary && (
           <div
@@ -159,7 +206,7 @@ function StoryCard({ story, rank }: { story: TopStory; rank: number }) {
               onMouseEnter={e => !aiLoading && ((e.currentTarget as HTMLElement).style.color = 'var(--gold)')}
               onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = 'var(--text-muted)')}
             >
-              {aiLoading ? '⏳ Analysing…' : '✦ AI Analysis'}
+              {aiLoading ? 'Analysing…' : '✦ AI Analysis'}
             </button>
           )}
         </div>
@@ -219,7 +266,7 @@ export default function TopStories({ stories, loading }: Props) {
           : stories.length === 0
           ? (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', padding: '64px 24px', color: 'var(--text-muted)' }}>
-              <span style={{ fontSize: 28, marginBottom: 12 }}>🔍</span>
+              <MagnifyingGlass size={28} weight="thin" style={{ marginBottom: 12, color: 'var(--text-muted)', opacity: 0.5 }} />
               <p className="font-body" style={{ fontSize: 13 }}>No stories available</p>
               <p className="font-data" style={{ fontSize: 9, marginTop: 4, letterSpacing: '0.10em', textTransform: 'uppercase' }}>RSS feeds may be temporarily unavailable</p>
             </div>

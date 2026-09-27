@@ -217,6 +217,8 @@ function TickerItem({ t, onSelect }: { t: Ticker; onSelect: (t: Ticker) => void 
   const pctStr     = `${t.changePct >= 0 ? '+' : ''}${t.changePct.toFixed(2)}%`;
   const priceColor = isUp ? 'var(--gold)' : isDown ? 'var(--negative)' : 'var(--text)';
   const chgColor   = isUp ? 'var(--positive)' : isDown ? 'var(--negative)' : 'var(--text-muted)';
+  const bgWash     = isUp ? 'rgba(46,204,113,0.05)' : isDown ? 'rgba(231,76,60,0.05)' : 'transparent';
+  const bgHover    = isUp ? 'rgba(46,204,113,0.10)' : isDown ? 'rgba(231,76,60,0.10)' : 'var(--surface-2)';
 
   return (
     <button
@@ -227,7 +229,7 @@ function TickerItem({ t, onSelect }: { t: Ticker; onSelect: (t: Ticker) => void 
         gap:          8,
         padding:      '0 20px',
         height:       '100%',
-        background:   'none',
+        background:   bgWash,
         borderWidth:  '0 1px 0 0',
         borderStyle:  'solid',
         borderColor:  'var(--border)',
@@ -235,8 +237,8 @@ function TickerItem({ t, onSelect }: { t: Ticker; onSelect: (t: Ticker) => void 
         flexShrink:   0,
         transition:   'background 0.1s',
       }}
-      onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface-2)')}
-      onMouseLeave={e => (e.currentTarget.style.background = 'none')}
+      onMouseEnter={e => (e.currentTarget.style.background = bgHover)}
+      onMouseLeave={e => (e.currentTarget.style.background = bgWash)}
     >
       {/* Name */}
       <span
@@ -270,10 +272,19 @@ function TickerItem({ t, onSelect }: { t: Ticker; onSelect: (t: Ticker) => void 
 
 /* ─── Ticker strip ───────────────────────────────────────────── */
 export default function EconomyPulse() {
-  const [tickers,  setTickers]  = useState<Ticker[]>([]);
-  const [loading,  setLoading]  = useState(true);
-  const [selected, setSelected] = useState<Ticker | null>(null);
-  const [paused,   setPaused]   = useState(false);
+  const [tickers,       setTickers]       = useState<Ticker[]>([]);
+  const [loading,       setLoading]       = useState(true);
+  const [selected,      setSelected]      = useState<Ticker | null>(null);
+  const [paused,        setPaused]        = useState(false);
+  const [prefersReduced, setPrefersReduced] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setPrefersReduced(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setPrefersReduced(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
 
   const fetchTickers = useCallback(async (isRetry = false) => {
     try {
@@ -315,6 +326,8 @@ export default function EconomyPulse() {
           alignItems:  'center',
           position:    'relative',
           overflow:    'hidden',
+          backdropFilter: 'blur(8px)',
+          WebkitBackdropFilter: 'blur(8px)',
         }}
       >
         {/* Fixed "MARKETS LIVE" label — anchors left of scrolling strip */}
@@ -378,12 +391,12 @@ export default function EconomyPulse() {
                 display:            'inline-flex',
                 alignItems:         'center',
                 height:             '100%',
-                animation:          'ticker-scroll 55s linear infinite',
+                animation:          prefersReduced ? 'none' : 'ticker-scroll 55s linear infinite',
                 animationPlayState: paused ? 'paused' : 'running',
                 willChange:         'transform',
               }}
             >
-              {[...tickers, ...tickers].map((t, i) => (
+              {(prefersReduced ? tickers : [...tickers, ...tickers]).map((t, i) => (
                 <TickerItem key={`${t.symbol}-${i}`} t={t} onSelect={setSelected} />
               ))}
             </div>

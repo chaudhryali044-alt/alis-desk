@@ -27,12 +27,12 @@
 
 /* ─── Dark mode (default) ────────────────────────────────────── */
 :root {
-  --bg:             #0A0A0A;
-  --surface:        #111111;
-  --surface-2:      #171717;
-  --surface-3:      #1E1E1E;
-  --border:         #1E1E1E;
-  --border-2:       #2A2A2A;
+  --bg:             #0D0F14;
+  --surface:        #141720;
+  --surface-2:      #1C2030;
+  --surface-3:      #232840;
+  --border:         #252C40;
+  --border-2:       #2E3650;
   --text:           #F0EDE6;
   --text-muted:     #4A4A4A;
   --text-secondary: #8C8C8C;
@@ -120,6 +120,7 @@ body {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 4px;
+  border-top-color: rgba(255,255,255,0.06);
 }
 .card-2 {
   background: var(--surface-2);
@@ -131,7 +132,7 @@ body {
 }
 .card-hover:hover {
   border-color: var(--gold-dim);
-  box-shadow: 0 0 0 1px var(--gold-dim);
+  box-shadow: 0 0 0 1px var(--gold-dim), inset 0 1px 0 rgba(255,255,255,0.04);
 }
 
 /* ─── Section labels ─────────────────────────────────────────── */
@@ -201,6 +202,13 @@ body {
   white-space: nowrap;
 }
 .btn-ghost:hover { border-color: var(--gold-dim); color: var(--gold); }
+
+.btn-gold:focus-visible,
+.btn-ghost:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+.btn-ghost { cursor: pointer; }
 
 /* ─── Impact badges ──────────────────────────────────────────── */
 .impact-high   { color: #E74C3C; font-family: var(--font-mono), monospace; font-size: 8px; font-weight: 700; letter-spacing: 0.1em; }
@@ -277,7 +285,7 @@ body {
   to   { background-position:  200% 0; }
 }
 .skeleton {
-  background: linear-gradient(90deg, #1A1A1A 25%, #242424 50%, #1A1A1A 75%);
+  background: linear-gradient(90deg, #1C2030 25%, #252C40 50%, #1C2030 75%);
   background-size: 200% 100%;
   animation: shimmer 1.6s infinite;
   border-radius: 2px;
@@ -331,4 +339,18 @@ body {
   text-align: center;
   background: var(--surface);
   margin-top: 0;
+}
+
+/* ─── Reduced motion ─────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-up,
+  .animate-section,
+  .animate-section-1,
+  .animate-section-2,
+  .animate-section-3,
+  .animate-section-4 {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
 }

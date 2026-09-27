@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { Lightning } from '@phosphor-icons/react';
 import ThemeToggle from './ThemeToggle';
 
 function WhatsAppIcon() {
@@ -186,7 +187,7 @@ export default function Navbar({ onBriefing, briefingLoading, onWhatsApp }: Navb
               />
               Generating…
             </>
-          ) : '⚡ Daily Briefing'}
+          ) : <><Lightning size={12} weight="bold" /> Daily Briefing</>}
         </button>
 
         <button
